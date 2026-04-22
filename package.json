@@ -4,10 +4,11 @@
   "main": "server.js",
   "type": "commonjs",
   "scripts": {
-  "start": "node server.js"
-},
+    "start": "node server.js"
+  },
   "dependencies": {
+    "@sparticuz/chromium": "^147.0.2",
     "express": "^5.2.1",
-    "puppeteer": "^24.41.0"
+    "puppeteer-core": "^24.42.0"
   }
 }
