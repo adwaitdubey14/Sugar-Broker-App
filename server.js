@@ -128,10 +128,15 @@ app.post('/generate-pdf', async (req, res) => {
     try {
         const data = req.body;
 
-        browser = await puppeteer.launch({
-            headless: true, // 🔥 important for production
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
-        });
+       browser = await puppeteer.launch({
+  headless: true,
+  executablePath: '/opt/render/.cache/puppeteer/chrome/linux-147.0.7727.56/chrome-linux64/chrome',
+  args: [
+    '--no-sandbox',
+    '--disable-setuid-sandbox',
+    '--disable-dev-shm-usage'
+  ]
+});
 
         const page = await browser.newPage();
 
