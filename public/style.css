@@ -1,0 +1,209 @@
+/* Base */
+body {
+  font-family: Arial;
+  margin: 0;
+  background: #f4f6f9;
+}
+
+/* Header */
+.header {
+  background: #1e293b;
+  color: white;
+  padding: 15px 20px;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+/* Nav */
+.nav {
+  display: flex;
+  background: #334155;
+}
+
+.nav button {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  background: #334155;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.nav button.active {
+  background: #0ea5e9;
+}
+
+/* Container */
+.container {
+  padding: 20px;
+}
+
+/* Cards */
+.card {
+  background: white;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+
+h3 {
+  margin-top: 0;
+  color: #1e293b;
+}
+
+/* Form Grid */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 30px;
+  row-gap: 16px;
+  margin-top: 10px;
+}
+
+/* Inputs */
+input, textarea {
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  width: 100%;
+  font-size: 14px;
+}
+
+/* Buttons */
+.btn {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.btn-primary { background: #0ea5e9; color: white; }
+.btn-success { background: #22c55e; color: white; }
+.btn-danger { background: #ef4444; color: white; }
+
+/* Table */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  background: #1e293b;
+  color: white;
+  padding: 10px;
+}
+
+td {
+  padding: 8px;
+  border: 1px solid #ddd;
+  text-align: center;
+}
+
+tr:nth-child(even) {
+  background: #f9fafb;
+}
+
+/* Hide */
+.hidden {
+  display: none;
+}
+
+/* UTR */
+.utr-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 40px;
+}
+
+.utr-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.utr-box h4 {
+  margin: 0;
+}
+
+/* Additional Section spacing */
+.additional-box {
+  display: flex;
+  flex-direction: column;
+  gap: 14px; /* 🔥 vertical spacing fix */
+}
+
+.total-section {
+  display: flex;
+  gap: 20px;              /* 🔥 horizontal spacing */
+  margin-top: 20px;       /* 🔥 vertical spacing */
+  align-items: center;
+}
+
+.total-section input {
+  flex: 1;                /* takes full width */
+}
+
+.total-section button {
+  white-space: nowrap;
+}
+@media (max-width: 768px) {
+
+  /* Keep layout but reduce tightness */
+  .container {
+    padding: 15px;
+  }
+
+  .card {
+    padding: 18px;
+    margin-bottom: 15px;
+  }
+
+  /* Stack grids (but keep spacing clean) */
+  .form-grid {
+    grid-template-columns: 1fr;
+    row-gap: 14px;
+  }
+
+  /* UTR section stacking */
+  .utr-grid {
+    grid-template-columns: 1fr;
+    row-gap: 14px;
+  }
+
+  /* Fix total section alignment */
+  .total-section {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  /* Buttons should not look cramped */
+  .btn {
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  /* Header readability */
+  .header {
+    font-size: 16px;
+    padding: 12px;
+    text-align: center;
+  }
+
+  /* Navigation */
+  .nav button {
+    font-size: 13px;
+    padding: 10px;
+  }
+
+  /* Table should scroll, not break */
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+}

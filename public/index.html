@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Delivery Order System</title>
+    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <div class="header">Delivery Order System - ANKIT BROKERS</div>
+    <div class="nav">
+        <button id="formBtn" class="active" onclick="showForm()">New Entry</button>
+        <button id="tableBtn" onclick="showTable()">Records</button>
+    </div>
+
+    <div class="container">
+        <div id="formSection">
+            <div class="card">
+                <h3>Basic Details</h3>
+                <div class="form-grid">
+                    <input type="date" id="date">
+                    <input id="md" placeholder="Managing Director">
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Bill To</h3>
+                <div class="form-grid">
+                    <input id="billName" placeholder="Name">
+                    <input id="billPlace" placeholder="Place">
+                    <input id="billGST" placeholder="GSTIN">
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Order Details</h3>
+                <div class="form-grid">
+                    <input type="number" id="quantity" placeholder="Quantity">
+                    <input id="grade" placeholder="Grade">
+                    <input type="number" id="rate" placeholder="Rate">
+                    <input id="vehicle" placeholder="Vehicle No">
+                </div>
+                <div class="total-section">
+                    <input id="total" placeholder="Total" readonly>
+                    <button class="btn btn-primary" onclick="calculate()">Calculate</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Ship To</h3>
+                <div class="form-grid">
+                    <input id="shipName" placeholder="Name">
+                    <input id="shipPlace" placeholder="Place">
+                    <input id="shipGST" placeholder="GSTIN">
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>UTR Details</h3>
+                <div class="utr-grid">
+                    <div class="utr-box">
+                        <h4>UTR 1</h4>
+                        <input id="utr1" placeholder="UTR Number">
+                        <input id="utr1Amount" placeholder="Amount">
+                        <input id="utr1Date" type="date">
+                    </div>
+                    <div class="utr-box">
+                        <h4>UTR 2</h4>
+                        <input id="utr2" placeholder="UTR Number">
+                        <input id="utr2Amount" placeholder="Amount">
+                        <input id="utr2Date" type="date">
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Additional</h3>
+                <input id="transportId" placeholder="Transport ID">
+                <textarea id="note" placeholder="Note"></textarea>
+            </div>
+
+            <button class="btn btn-success" onclick="saveData()">Save</button>
+            <button class="btn btn-primary" onclick="generatePDF()">Generate PDF</button>
+            <button class="btn" onclick="resetForm()">New Record</button>
+        </div>
+
+        <div id="tableSection" class="hidden">
+            <div class="card">
+                <h3>Saved Records</h3>
+                <table id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>MD</th>
+                            <th>Party</th>
+                            <th>Qty</th>
+                            <th>Rate</th>
+                            <th>Total</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        function showForm() {
+            document.getElementById('formSection').classList.remove('hidden');
+            document.getElementById('tableSection').classList.add('hidden');
+            document.getElementById('formBtn').classList.add('active');
+            document.getElementById('tableBtn').classList.remove('active');
+        }
+        function showTable() {
+            document.getElementById('formSection').classList.add('hidden');
+            document.getElementById('tableSection').classList.remove('hidden');
+            document.getElementById('tableBtn').classList.add('active');
+            document.getElementById('formBtn').classList.remove('active');
+        }
+    </script>
+</body>
+</html>
