@@ -1,5 +1,5 @@
 /* =========================================
-   1. GLOBAL & RESET
+   1. GLOBAL & BOX FIXES
    ========================================= */
 * {
     box-sizing: border-box; /* 🔥 PREVENTS BOXES FROM GOING OUT OF RANGE */
@@ -16,21 +16,20 @@ body {
 }
 
 /* =========================================
-   2. HEADER & NAVIGATION
+   2. HEADER & NAVIGATION (Color Fix)
    ========================================= */
 .header {
     background: #1e293b;
     color: white;
     padding: 18px 15px;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: bold;
     text-align: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .nav {
     display: flex;
-    background: #334155;
+    background: #1e293b; /* Dark base for non-selected */
     position: sticky;
     top: 0;
     z-index: 1000;
@@ -40,8 +39,8 @@ body {
     flex: 1;
     padding: 15px 10px;
     border: none;
-    background: #334155;
-    color: #cbd5e1;
+    background: #1e293b; /* 🔥 Non-selected background */
+    color: #94a3b8;      /* 🔥 Non-selected text color */
     cursor: pointer;
     font-size: 14px;
     font-weight: 600;
@@ -49,13 +48,13 @@ body {
 }
 
 .nav button.active {
-    background: #0ea5e9;
-    color: white;
+    background: #0ea5e9; /* 🔥 Selected background (Bright Blue) */
+    color: white;        /* 🔥 Selected text color */
     border-bottom: 3px solid #f0f9ff;
 }
 
 /* =========================================
-   3. LAYOUT & CONTAINERS
+   3. LAYOUT & CARDS
    ========================================= */
 .container {
     padding: 15px;
@@ -67,7 +66,7 @@ body {
     background: white;
     padding: 20px;
     border-radius: 12px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
     border: 1px solid #e2e8f0;
 }
@@ -82,33 +81,53 @@ h3 {
 
 h4 {
     margin: 0 0 10px 0;
-    font-size: 14px;
+    font-size: 13px;
     color: #64748b;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
 }
 
 /* =========================================
-   4. FORM ELEMENTS & SPACING
+   4. UNIFIED INPUTS & SPACING (The Main Fix)
    ========================================= */
-/* Mobile Default: Stacked columns */
+/* Default Mobile: All blocks stack with uniform spacing */
 .form-grid, 
 .utr-grid, 
-.additional-box {
+.additional-box,
+.utr-box {
     display: flex;
     flex-direction: column;
-    gap: 15px; /* 🔥 VERTICAL SPACING BETWEEN INPUTS */
+    gap: 15px; /* 🔥 UNIFORM VERTICAL SPACING */
 }
 
-input, textarea {
+.label-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+label {
+    font-size: 11px;
+    font-weight: bold;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    margin-left: 2px;
+}
+
+input, textarea, input[type="date"] {
     width: 100%;
-    padding: 12px 15px;
+    padding: 12px;
     border: 1px solid #cbd5e1;
     border-radius: 8px;
-    font-size: 16px; /* Prevents auto-zoom on iOS */
+    font-size: 15px;
     background: #f8fafc;
     color: #334155;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    height: 48px; /* 🔥 UNIFIED HEIGHT FOR ALL BLOCKS */
+    transition: all 0.2s;
+}
+
+textarea {
+    height: 100px; /* Textarea is the only exception */
 }
 
 input:focus, textarea:focus {
@@ -118,26 +137,11 @@ input:focus, textarea:focus {
     box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
 }
 
-/* Readonly / Total Field */
 input[readonly] {
     background: #f1f5f9;
     font-weight: bold;
     color: #0369a1;
     border-style: dashed;
-}
-
-.total-section {
-    margin-top: 20px;
-    padding-top: 15px;
-    border-top: 1px dashed #cbd5e1;
-}
-
-.total-section label {
-    display: block;
-    font-size: 13px;
-    font-weight: bold;
-    margin-bottom: 8px;
-    color: #64748b;
 }
 
 /* =========================================
@@ -151,112 +155,42 @@ input[readonly] {
     font-size: 15px;
     font-weight: bold;
     cursor: pointer;
-    margin-top: 12px;
-    transition: opacity 0.2s, transform 0.1s;
-}
-
-.btn:active {
-    transform: scale(0.98);
+    margin-top: 10px;
 }
 
 .btn-success { background: #22c55e; color: white; }
 .btn-primary { background: #0ea5e9; color: white; }
-.btn-secondary { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
 
 /* =========================================
-   6. TABLE & RECORDS
+   6. TABLE & LAPTOP VIEW
    ========================================= */
 #tableSection {
     width: 100%;
-    overflow-x: auto; /* 🔥 ALLOWS TABLE SCROLLING ON MOBILE */
+    overflow-x: auto;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 700px; /* Ensures table doesn't squash on small screens */
+    min-width: 700px;
 }
 
-th {
-    background: #1e293b;
-    color: white;
-    padding: 12px;
-    text-align: center;
-    font-size: 13px;
-}
+th { background: #1e293b; color: white; padding: 12px; font-size: 13px; }
+td { padding: 12px; border: 1px solid #e2e8f0; text-align: center; font-size: 14px; }
 
-td {
-    padding: 12px;
-    border: 1px solid #e2e8f0;
-    text-align: center;
-    font-size: 14px;
-}
-
-tr:nth-child(even) {
-    background: #f8fafc;
-}
-
-/* =========================================
-   7. DESKTOP RESPONSIVENESS (600px+)
-   ========================================= */
 @media (min-width: 600px) {
-    .container {
-        padding: 30px;
-    }
-
-    .card {
-        padding: 25px;
-    }
-
-    /* Restore 2-column grid for Laptop/Desktop */
+    /* Restore Grid for Laptop */
     .form-grid, .utr-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 20px;
     }
-
+    
     .btn {
-        width: auto; /* Buttons don't need to be full width on desktop */
-        min-width: 150px;
+        width: auto;
+        min-width: 160px;
         margin-right: 10px;
     }
-
-    .header {
-        font-size: 24px;
-    }
 }
 
-/* =========================================
-   8. UTILITIES
-   ========================================= */
-.hidden {
-    display: none;
-}
-
-/* Label Group Styling */
-.label-group {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-label {
-    font-size: 12px;
-    font-weight: bold;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-    margin-left: 2px;
-}
-
-/* Ensure date inputs have a consistent height */
-input[type="date"] {
-    height: 45px;
-}
-
-/* Space out the Additional section textarea specifically */
-.additional-box {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
+.hidden { display: none; }

@@ -84,10 +84,18 @@
 </div>
 
             <div class="card">
-                <h3>Additional</h3>
-                <input id="transportId" placeholder="Transport ID">
-                <textarea id="note" placeholder="Note"></textarea>
-            </div>
+    <h3>Additional</h3>
+    <div class="additional-box">
+        <div class="label-group">
+            <label>Transport ID</label>
+            <input id="transportId" placeholder="Transport ID">
+        </div>
+        <div class="label-group">
+            <label>Note</label>
+            <textarea id="note" placeholder="Any extra notes..."></textarea>
+        </div>
+    </div>
+</div>
 
             <button class="btn btn-success" onclick="saveData()">Save</button>
             <button class="btn btn-primary" onclick="generatePDF()">Generate PDF</button>
