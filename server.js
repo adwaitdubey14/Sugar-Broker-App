@@ -47,33 +47,24 @@ app.post('/generate-pdf', async (req, res) => {
     let browser;
     try {
         const data = req.body;
-        const isLocal = !process.env.PORT; // If no PORT, we are testing on your laptop
+        const isLocal = !process.env.PORT;
         
         let launchOptions = {};
-
         if (isLocal) {
-            // 🔥 SEARCH FOR CHROME ON WINDOWS
             const paths = [
                 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
                 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
                 `${process.env.LOCALAPPDATA}\\Google\\Chrome\\Application\\chrome.exe`
             ];
             const executablePath = paths.find(p => fs.existsSync(p));
-            
-            if (!executablePath) {
-                return res.status(500).send("Chrome not found on your computer. Install Google Chrome.");
-            }
-
             launchOptions = {
                 executablePath,
                 headless: "new",
-                args: ['--no-sandbox', '--disable-setuid-sandbox']
+                args: ['--no-sandbox']
             };
         } else {
-            // ☁️ RENDER CLOUD SETTINGS
             launchOptions = {
                 args: chromium.args,
-                defaultViewport: chromium.defaultViewport,
                 executablePath: await chromium.executablePath(),
                 headless: chromium.headless,
             };
@@ -86,28 +77,39 @@ app.post('/generate-pdf', async (req, res) => {
         <html>
         <head>
             <style>
-                body { font-family: 'Arial', sans-serif; padding: 10px; color: #000; line-height: 1.2; }
-                .main-border { border: 2px solid black; padding: 10px; }
-                .header-box { text-align: center; margin-bottom: 10px; }
-                .client-title { font-size: 28px; font-weight: bold; text-decoration: underline; margin: 0; letter-spacing: 1px; }
-                .sub-title-wrap { border: 1.5px solid black; display: inline-block; padding: 4px 20px; margin: 8px 0; font-weight: bold; font-size: 14px; }
-                .contact-line { font-size: 11px; margin: 2px 0; }
-                .jurisdiction { font-size: 10px; font-weight: bold; margin-top: 5px; border-top: 1px solid #eee; padding-top: 2px; }
-                .memo-bar { background: #e0f2fe; border: 1.5px solid black; padding: 5px; font-weight: bold; margin-top: 8px; font-size: 15px; text-transform: uppercase; }
-                .top-info { width: 100%; border-collapse: collapse; margin-top: 10px; }
-                .top-info td { border: 1.5px solid black; padding: 8px; font-size: 12px; vertical-align: top; }
-                .address-section { width: 100%; border-collapse: collapse; margin-top: -1.5px; }
-                .address-section td { border: 1.5px solid black; padding: 8px; width: 50%; vertical-align: top; font-size: 11px; }
-                .section-label { background: #f1f5f9; font-weight: bold; text-align: center; border-bottom: 1.5px solid black !important; font-size: 12px; }
-                .item-table { width: 100%; border-collapse: collapse; margin-top: -1.5px; }
-                .item-table th, .item-table td { border: 1.5px solid black; padding: 8px; text-align: center; font-size: 12px; }
-                .item-table th { background: #f1f5f9; }
-                .payment-header { color: #b91c1c; font-weight: bold; font-size: 12px; padding: 5px; border: 1.5px solid black; border-bottom: none; margin-top: 10px; }
-                .utr-table { width: 100%; border-collapse: collapse; }
-                .utr-table th, .utr-table td { border: 1.5px solid black; padding: 6px; font-size: 11px; text-align: center; }
-                .utr-table th { background: #f1f5f9; }
-                .footer-box { margin-top: 15px; display: flex; justify-content: space-between; font-size: 11px; }
-                .stamp-side { text-align: right; font-weight: bold; margin-top: 20px; }
+                @page { margin: 0; }
+                body { 
+                    font-family: 'Arial', sans-serif; 
+                    margin: 0; 
+                    padding: 20px; 
+                    color: #000; 
+                    line-height: 1.3;
+                }
+                .main-border { 
+                    border: 2px solid black; 
+                    padding: 20px; 
+                    min-height: 94vh; /* 🔥 This stretches the border to full page height */
+                    display: flex;
+                    flex-direction: column;
+                }
+                .header-box { text-align: center; margin-bottom: 15px; }
+                .client-title { font-size: 32px; font-weight: bold; text-decoration: underline; margin: 0; }
+                .sub-title-wrap { border: 2px solid black; display: inline-block; padding: 6px 30px; margin: 10px 0; font-weight: bold; font-size: 16px; }
+                .memo-bar { 
+                    background: #e0f2fe !important; 
+                    -webkit-print-color-adjust: exact; 
+                    border: 2px solid black; 
+                    padding: 10px; 
+                    font-weight: bold; 
+                    margin-top: 12px; 
+                    font-size: 18px; 
+                    text-transform: uppercase; 
+                }
+                table { width: 100%; border-collapse: collapse; margin-top: -1px; }
+                td, th { border: 2px solid black; padding: 12px; font-size: 14px; }
+                .section-label { background: #f1f5f9 !important; -webkit-print-color-adjust: exact; font-weight: bold; text-align: center; }
+                .footer-box { margin-top: auto; padding-top: 20px; display: flex; justify-content: space-between; font-size: 13px; }
+                .stamp-side { text-align: right; font-weight: bold; margin-top: 40px; }
             </style>
         </head>
         <body>
@@ -115,71 +117,61 @@ app.post('/generate-pdf', async (req, res) => {
                 <div class="header-box">
                     <h1 class="client-title">ANKIT BROKERS</h1>
                     <div class="sub-title-wrap">SUGAR BROKER AND COMMISSION AGENT</div>
-                    <p class="contact-line">Siyaganj, Indore 452001 (M.P.)</p>
-                    <p class="contact-line">Ph.: 2464600, 4055540, Mob.: 9425951212, 9424052922</p>
-                    <div class="jurisdiction">SUBJECT TO INDORE JURISDICTION</div>
+                    <p>Siyaganj, Indore 452001 (M.P.) | Ph.: 2464600 | Mob.: 9425951212</p>
                     <div class="memo-bar">SUGAR DELIVERY MEMO</div>
                 </div>
 
-                <table class="top-info">
+                <table>
                     <tr>
-                        <td width="65%"><b>THE MANAGING DIRECTOR SIR,</b><br>MILL NAME: <b>${data.md || ''}</b></td>
-                        <td width="35%"><b>DATE:</b> ${data.date || ''}<br><b>TRUCK NO:</b> ${data.vehicle || ''}</td>
+                        <td width="65%"><b>TO:</b> ${data.md || ''}</td>
+                        <td width="35%"><b>DATE:</b> ${data.date || ''}<br><b>VEHICLE:</b> ${data.vehicle || ''}</td>
                     </tr>
                 </table>
 
-                <table class="address-section">
-                    <tr><td class="section-label">BILL TO.</td><td class="section-label">SHIPPED TO.</td></tr>
+                <table>
+                    <tr><td class="section-label">BILL TO</td><td class="section-label">SHIPPED TO</td></tr>
                     <tr>
-                        <td><b>${data.billTo?.name || ''}</b><br>${data.billTo?.place || ''}<br><b>${data.billTo?.city || ''}</b><br>GST: ${data.billTo?.gst || ''}</td>
-                        <td><b>${data.shipTo?.name || ''}</b><br>${data.shipTo?.place || ''}<br><b>${data.shipTo?.city || ''}</b><br>GST: ${data.shipTo?.gst || ''}</td>
+                        <td><b>${data.billTo?.name || ''}</b><br>${data.billTo?.place || ''}<br>${data.billTo?.city || ''}<br>GST: ${data.billTo?.gst || ''}</td>
+                        <td><b>${data.shipTo?.name || ''}</b><br>${data.shipTo?.place || ''}<br>${data.shipTo?.city || ''}<br>GST: ${data.shipTo?.gst || ''}</td>
                     </tr>
                 </table>
 
-                <table class="item-table">
-                    <thead><tr><th>QTY (BAGS)</th><th>GRADE</th><th>MILL RATE</th><th>SUGAR AMT</th></tr></thead>
-                    <tbody><tr><td><b>${data.quantity || ''}</b></td><td>${data.grade || ''}</td><td>${data.rate || ''}</td><td><b>${data.total || ''}</b></td></tr></tbody>
+                <table>
+                    <tr class="section-label"><th>QTY</th><th>GRADE</th><th>RATE</th><th>TOTAL</th></tr>
+                    <tr><td align="center">${data.quantity || ''}</td><td align="center">${data.grade || ''}</td><td align="center">${data.rate || ''}</td><td align="center"><b>${data.total || ''}</b></td></tr>
                 </table>
 
-                <div class="payment-header">PAYMENT DETAILS / MILL PAYMENT</div>
-                <table class="utr-table">
-                    <thead><tr><th>DATE</th><th>UTR NUMBER</th><th>AMOUNT</th></tr></thead>
-                    <tbody>
-                        ${(data.utrDetails || []).map(utr => `
-                            <tr>
-                                <td>${utr.date || ''}</td>
-                                <td>${utr.utrNumber || ''}</td>
-                                <td>${utr.amount || ''}</td>
-                            </tr>
-                        `).join('')}
-                        <tr style="font-weight:bold; background:#f8fafc">
-                            <td colspan="2" style="text-align:right">TOTAL AMOUNT :-</td>
-                            <td>${data.total || ''}</td>
-                        </tr>
-                    </tbody>
+                <div style="color:red; font-weight:bold; margin-top:15px; border: 2px solid black; border-bottom:none; padding: 5px;">PAYMENT DETAILS</div>
+                <table>
+                    <tr class="section-label"><th>DATE</th><th>UTR NUMBER</th><th>AMOUNT</th></tr>
+                    ${(data.utrDetails || []).map(u => `<tr><td>${u.date}</td><td>${u.utrNumber}</td><td>${u.amount}</td></tr>`).join('')}
+                    <tr style="font-weight:bold">
+                        <td colspan="2" align="right">TOTAL AMOUNT :-</td>
+                        <td align="center">${data.total || ''}</td>
+                    </tr>
                 </table>
 
                 <div class="footer-box">
-                    <div><b>REMARK:</b> ${data.note || ''}<br>THANK YOU</div>
-                    <div class="stamp-side">For Ankit Brokers<br><br><br>Proprietor</div>
+                    <div><b>REMARK:</b> ${data.note || ''}<br><br>THANK YOU</div>
+                    <div class="stamp-side">For Ankit Brokers<br><br><br><br>Proprietor</div>
                 </div>
             </div>
         </body>
-        </html>
-        `;
+        </html>`;
 
         await page.setContent(html, { waitUntil: 'networkidle0' });
-        const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
+        const pdfBuffer = await page.pdf({ 
+            format: 'A4', 
+            printBackground: true,
+            margin: { top: '10mm', bottom: '10mm', left: '10mm', right: '10mm' }
+        });
         
         await browser.close();
-
-        res.contentType("application/pdf");
-        res.send(pdfBuffer);
+        res.contentType("application/pdf").send(pdfBuffer);
 
     } catch (err) {
-        console.error("PDF ERROR:", err);
         if (browser) await browser.close();
-        res.status(500).send("Error generating PDF: " + err.message);
+        res.status(500).send(err.message);
     }
 });
 

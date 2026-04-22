@@ -161,7 +161,7 @@ function resetForm() {
     document.querySelectorAll('input, textarea').forEach(i => i.value = '');
     document.getElementById('utrContainer').innerHTML = '';
     addUTRRow();
-   
+   /*  document.getElementById('date').valueAsDate = new Date(); */
 }
 
 document.addEventListener('DOMContentLoaded', () => {
