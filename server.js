@@ -125,16 +125,16 @@ app.delete('/delete/:id', (req, res) => {
 
 app.post('/generate-pdf', async (req, res) => {
     let browser;
-
     try {
         const data = req.body;
 
- browser = await puppeteer.launch({
-  args: chromium.args,
-  defaultViewport: chromium.defaultViewport,
-  executablePath: await chromium.executablePath(),
-  headless: chromium.headless
-});
+        browser = await puppeteer.launch({
+            args: chromium.args,
+            defaultViewport: chromium.defaultViewport,
+            executablePath: await chromium.executablePath(),
+            headless: chromium.headless,
+            ignoreHTTPSErrors: true,
+        });
 
         const page = await browser.newPage();
 
@@ -230,25 +230,23 @@ app.post('/generate-pdf', async (req, res) => {
 
         const pdfBuffer = await page.pdf({
             format: 'A4',
-            printBackground: true
+            printBackground: true,
+            margin: { top: '20px', right: '20px', bottom: '20px', left: '20px' }
         });
 
         await browser.close();
 
-        // ✅ FIXED RESPONSE (THIS IS THE MAIN FIX)
-        res.setHeader('Content-Type', 'application/pdf');
+        // STRICT BINARY HEADERS
+        res.contentType("application/pdf");
         res.setHeader('Content-Disposition', 'attachment; filename="receipt.pdf"');
-        res.setHeader('Content-Length', pdfBuffer.length);
-
-        return res.send(pdfBuffer);
+        res.send(pdfBuffer); // Send the raw buffer directly
 
     } catch (err) {
         console.error("PDF ERROR:", err);
         if (browser) await browser.close();
-        res.status(500).send("PDF generation failed");
+        res.status(500).send("Error generating PDF: " + err.message);
     }
 });
-
 /* app.listen(3001, () => console.log('Server running at http://localhost:3001')); */
 
 const PORT = process.env.PORT || 3000;

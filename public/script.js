@@ -97,18 +97,45 @@ async function generatePDF() {
 }
 
 async function sendToPDF(itemData) {
-    const response = await fetch('/generate-pdf', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(itemData)
-    });
+    try {
+        const response = await fetch('/generate-pdf', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(itemData)
+        });
 
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Receipt_${itemData.billTo?.name || 'Order'}.pdf`;
-    a.click();
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText);
+        }
+
+        const blob = await response.blob();
+        
+        // Check if the blob is actually a PDF
+        if (blob.type !== "application/pdf") {
+            alert("Server returned an invalid file format. Check server logs.");
+            return;
+        }
+
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        // Ensure filename is clean for mobile
+        a.download = `Receipt_${(itemData.billTo?.name || 'Order').replace(/\s+/g, '_')}.pdf`;
+        
+        document.body.appendChild(a);
+        a.click();
+        
+        // Cleanup for mobile memory
+        setTimeout(() => {
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }, 100);
+    } catch (err) {
+        console.error("Download Error:", err);
+        alert("Failed to download PDF: " + err.message);
+    }
 }
 
 async function deleteData(id) {
