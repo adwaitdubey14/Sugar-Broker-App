@@ -9,6 +9,8 @@
   "dependencies": {
     "@sparticuz/chromium": "^147.0.2",
     "express": "^5.2.1",
+    "mongodb": "^7.2.0",
+    "mongoose": "^9.5.0",
     "puppeteer-core": "^24.42.0"
   }
 }

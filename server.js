@@ -1,48 +1,79 @@
 const express = require('express');
-const fs = require('fs');
+const mongoose = require('mongoose');
 const puppeteer = require('puppeteer-core');
 const chromium = require('@sparticuz/chromium');
+const fs = require('fs');
 const app = express();
 
 app.use(express.json());
 app.use(express.static('public'));
 
-const FILE = 'data.json';
+// --- 1. DATABASE CONNECTION ---
+// On your laptop, you can paste the string in the quotes. 
+// On Render, it will automatically use the secret "MONGO_URI" you set in the dashboard.
+const MONGO_URI = process.env.MONGO_URI || "mongodb://admin:<db_password>@ac-eslpjtn-shard-00-00.2nhq0cl.mongodb.net:27017,ac-eslpjtn-shard-00-01.2nhq0cl.mongodb.net:27017,ac-eslpjtn-shard-00-02.2nhq0cl.mongodb.net:27017/AnkitBrokers?ssl=true&replicaSet=atlas-qr4pw0-shard-0&authSource=admin&appName=Cluster0";
 
-// --- DATA UTILITIES ---
-function readData() {
+mongoose.connect(MONGO_URI, {
+    serverSelectionTimeoutMS: 10000,
+    family: 4 // Keeps the connection on IPv4 for better local stability
+})
+.then(() => console.log("✅ Permanent Cloud Database Connected"))
+.catch(err => {
+    console.error("❌ Database Connection Error!");
+    console.error("Message:", err.message);
+});
+
+// --- 2. DATA SCHEMA ---
+const ReceiptSchema = new mongoose.Schema({
+    date: String,
+    md: String,
+    billTo: { name: String, place: String, city: String, gst: String },
+    shipTo: { name: String, place: String, city: String, gst: String },
+    utrDetails: [{ utrNumber: String, amount: String, date: String }],
+    quantity: String,
+    grade: String,
+    rate: String,
+    vehicle: String,
+    total: String,
+    transportId: String,
+    note: String
+}, { timestamps: true });
+
+const Receipt = mongoose.model('Receipt', ReceiptSchema);
+
+// --- 3. ROUTES ---
+
+// Fetch all records
+app.get('/data', async (req, res) => {
     try {
-        const raw = fs.readFileSync(FILE, 'utf8');
-        return JSON.parse(raw || '[]');
-    } catch { return []; }
-}
-
-function writeData(data) {
-    fs.writeFileSync(FILE, JSON.stringify(data, null, 2), 'utf8');
-}
-
-// --- ROUTES ---
-app.get('/data', (req, res) => res.json(readData()));
-
-app.post('/save', (req, res) => {
-    const data = readData();
-    if (req.body.id) {
-        const updated = data.map(item => String(item.id) === String(req.body.id) ? { ...req.body } : item);
-        writeData(updated);
-    } else {
-        const newEntry = { id: String(Date.now()), ...req.body };
-        data.push(newEntry);
-        writeData(data);
-    }
-    res.json({ message: 'Saved' });
+        const receipts = await Receipt.find().sort({ createdAt: -1 });
+        const formatted = receipts.map(r => ({ ...r._doc, id: r._id }));
+        res.json(formatted);
+    } catch (err) { res.status(500).send(err.message); }
 });
 
-app.delete('/delete/:id', (req, res) => {
-    const data = readData().filter(item => String(item.id) !== String(req.params.id));
-    writeData(data);
-    res.json({ message: 'Deleted successfully' });
+// Save or Update
+app.post('/save', async (req, res) => {
+    try {
+        if (req.body.id) {
+            await Receipt.findByIdAndUpdate(req.body.id, req.body);
+        } else {
+            const newReceipt = new Receipt(req.body);
+            await newReceipt.save();
+        }
+        res.json({ message: 'Saved successfully' });
+    } catch (err) { res.status(500).send(err.message); }
 });
 
+// Delete
+app.delete('/delete/:id', async (req, res) => {
+    try {
+        await Receipt.findByIdAndDelete(req.params.id);
+        res.json({ message: 'Deleted' });
+    } catch (err) { res.status(500).send(err.message); }
+});
+
+// PDF Generation
 app.post('/generate-pdf', async (req, res) => {
     let browser;
     try {
@@ -65,6 +96,7 @@ app.post('/generate-pdf', async (req, res) => {
         } else {
             launchOptions = {
                 args: chromium.args,
+                defaultViewport: chromium.defaultViewport,
                 executablePath: await chromium.executablePath(),
                 headless: chromium.headless,
             };
@@ -77,39 +109,28 @@ app.post('/generate-pdf', async (req, res) => {
         <html>
         <head>
             <style>
-                @page { margin: 0; }
-                body { 
-                    font-family: 'Arial', sans-serif; 
-                    margin: 0; 
-                    padding: 20px; 
-                    color: #000; 
-                    line-height: 1.3;
-                }
-                .main-border { 
-                    border: 2px solid black; 
-                    padding: 20px; 
-                    min-height: 94vh; /* 🔥 This stretches the border to full page height */
-                    display: flex;
-                    flex-direction: column;
-                }
-                .header-box { text-align: center; margin-bottom: 15px; }
-                .client-title { font-size: 32px; font-weight: bold; text-decoration: underline; margin: 0; }
-                .sub-title-wrap { border: 2px solid black; display: inline-block; padding: 6px 30px; margin: 10px 0; font-weight: bold; font-size: 16px; }
-                .memo-bar { 
-                    background: #e0f2fe !important; 
-                    -webkit-print-color-adjust: exact; 
-                    border: 2px solid black; 
-                    padding: 10px; 
-                    font-weight: bold; 
-                    margin-top: 12px; 
-                    font-size: 18px; 
-                    text-transform: uppercase; 
-                }
-                table { width: 100%; border-collapse: collapse; margin-top: -1px; }
-                td, th { border: 2px solid black; padding: 12px; font-size: 14px; }
-                .section-label { background: #f1f5f9 !important; -webkit-print-color-adjust: exact; font-weight: bold; text-align: center; }
-                .footer-box { margin-top: auto; padding-top: 20px; display: flex; justify-content: space-between; font-size: 13px; }
-                .stamp-side { text-align: right; font-weight: bold; margin-top: 40px; }
+                body { font-family: 'Arial', sans-serif; padding: 10px; color: #000; line-height: 1.2; }
+                .main-border { border: 2px solid black; padding: 10px; }
+                .header-box { text-align: center; margin-bottom: 10px; }
+                .client-title { font-size: 28px; font-weight: bold; text-decoration: underline; margin: 0; letter-spacing: 1px; }
+                .sub-title-wrap { border: 1.5px solid black; display: inline-block; padding: 4px 20px; margin: 8px 0; font-weight: bold; font-size: 14px; }
+                .contact-line { font-size: 11px; margin: 2px 0; }
+                .jurisdiction { font-size: 10px; font-weight: bold; margin-top: 5px; border-top: 1px solid #eee; padding-top: 2px; }
+                .memo-bar { background: #e0f2fe; border: 1.5px solid black; padding: 5px; font-weight: bold; margin-top: 8px; font-size: 15px; text-transform: uppercase; }
+                .top-info { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                .top-info td { border: 1.5px solid black; padding: 8px; font-size: 12px; vertical-align: top; }
+                .address-section { width: 100%; border-collapse: collapse; margin-top: -1.5px; }
+                .address-section td { border: 1.5px solid black; padding: 8px; width: 50%; vertical-align: top; font-size: 11px; }
+                .section-label { background: #f1f5f9; font-weight: bold; text-align: center; border-bottom: 1.5px solid black !important; font-size: 12px; }
+                .item-table { width: 100%; border-collapse: collapse; margin-top: -1.5px; }
+                .item-table th, .item-table td { border: 1.5px solid black; padding: 8px; text-align: center; font-size: 12px; }
+                .item-table th { background: #f1f5f9; }
+                .payment-header { color: #b91c1c; font-weight: bold; font-size: 12px; padding: 5px; border: 1.5px solid black; border-bottom: none; margin-top: 10px; }
+                .utr-table { width: 100%; border-collapse: collapse; }
+                .utr-table th, .utr-table td { border: 1.5px solid black; padding: 6px; font-size: 11px; text-align: center; }
+                .utr-table th { background: #f1f5f9; }
+                .footer-box { margin-top: 15px; display: flex; justify-content: space-between; font-size: 11px; }
+                .stamp-side { text-align: right; font-weight: bold; margin-top: 20px; }
             </style>
         </head>
         <body>
@@ -117,58 +138,68 @@ app.post('/generate-pdf', async (req, res) => {
                 <div class="header-box">
                     <h1 class="client-title">ANKIT BROKERS</h1>
                     <div class="sub-title-wrap">SUGAR BROKER AND COMMISSION AGENT</div>
-                    <p>Siyaganj, Indore 452001 (M.P.) | Ph.: 2464600 | Mob.: 9425951212</p>
+                    <p class="contact-line">Siyaganj, Indore 452001 (M.P.)</p>
+                    <p class="contact-line">Ph.: 2464600, 4055540, Mob.: 9425951212, 9424052922</p>
+                    <div class="jurisdiction">SUBJECT TO INDORE JURISDICTION</div>
                     <div class="memo-bar">SUGAR DELIVERY MEMO</div>
                 </div>
 
-                <table>
+                <table class="top-info">
                     <tr>
-                        <td width="65%"><b>TO:</b> ${data.md || ''}</td>
-                        <td width="35%"><b>DATE:</b> ${data.date || ''}<br><b>VEHICLE:</b> ${data.vehicle || ''}</td>
+                        <td width="65%"><b>THE MANAGING DIRECTOR SIR,</b><br>MILL NAME: <b>${data.md || ''}</b></td>
+                        <td width="35%"><b>DATE:</b> ${data.date || ''}<br><b>TRUCK NO:</b> ${data.vehicle || ''}</td>
                     </tr>
                 </table>
 
-                <table>
-                    <tr><td class="section-label">BILL TO</td><td class="section-label">SHIPPED TO</td></tr>
+                <table class="address-section">
+                    <tr><td class="section-label">BILL TO.</td><td class="section-label">SHIPPED TO.</td></tr>
                     <tr>
-                        <td><b>${data.billTo?.name || ''}</b><br>${data.billTo?.place || ''}<br>${data.billTo?.city || ''}<br>GST: ${data.billTo?.gst || ''}</td>
-                        <td><b>${data.shipTo?.name || ''}</b><br>${data.shipTo?.place || ''}<br>${data.shipTo?.city || ''}<br>GST: ${data.shipTo?.gst || ''}</td>
+                        <td><b>${data.billTo?.name || ''}</b><br>${data.billTo?.place || ''}<br><b>${data.billTo?.city || ''}</b><br>GST: ${data.billTo?.gst || ''}</td>
+                        <td><b>${data.shipTo?.name || ''}</b><br>${data.shipTo?.place || ''}<br><b>${data.shipTo?.city || ''}</b><br>GST: ${data.shipTo?.gst || ''}</td>
                     </tr>
                 </table>
 
-                <table>
-                    <tr class="section-label"><th>QTY</th><th>GRADE</th><th>RATE</th><th>TOTAL</th></tr>
-                    <tr><td align="center">${data.quantity || ''}</td><td align="center">${data.grade || ''}</td><td align="center">${data.rate || ''}</td><td align="center"><b>${data.total || ''}</b></td></tr>
+                <table class="item-table">
+                    <thead><tr><th>QTY (BAGS)</th><th>GRADE</th><th>MILL RATE</th><th>SUGAR AMT</th></tr></thead>
+                    <tbody><tr><td><b>${data.quantity || ''}</b></td><td>${data.grade || ''}</td><td>${data.rate || ''}</td><td><b>${data.total || ''}</b></td></tr></tbody>
                 </table>
 
-                <div style="color:red; font-weight:bold; margin-top:15px; border: 2px solid black; border-bottom:none; padding: 5px;">PAYMENT DETAILS</div>
-                <table>
-                    <tr class="section-label"><th>DATE</th><th>UTR NUMBER</th><th>AMOUNT</th></tr>
-                    ${(data.utrDetails || []).map(u => `<tr><td>${u.date}</td><td>${u.utrNumber}</td><td>${u.amount}</td></tr>`).join('')}
-                    <tr style="font-weight:bold">
-                        <td colspan="2" align="right">TOTAL AMOUNT :-</td>
-                        <td align="center">${data.total || ''}</td>
-                    </tr>
+                <div class="payment-header">PAYMENT DETAILS / MILL PAYMENT</div>
+                <table class="utr-table">
+                    <thead><tr><th>DATE</th><th>UTR NUMBER</th><th>AMOUNT</th></tr></thead>
+                    <tbody>
+                        ${(data.utrDetails || []).map(utr => `
+                            <tr>
+                                <td>${utr.date || ''}</td>
+                                <td>${utr.utrNumber || ''}</td>
+                                <td>${utr.amount || ''}</td>
+                            </tr>
+                        `).join('')}
+                        <tr style="font-weight:bold; background:#f8fafc">
+                            <td colspan="2" style="text-align:right">TOTAL AMOUNT :-</td>
+                            <td>${data.total || ''}</td>
+                        </tr>
+                    </tbody>
                 </table>
 
                 <div class="footer-box">
-                    <div><b>REMARK:</b> ${data.note || ''}<br><br>THANK YOU</div>
-                    <div class="stamp-side">For Ankit Brokers<br><br><br><br>Proprietor</div>
+                    <div><b>REMARK:</b> ${data.note || ''}<br>THANK YOU</div>
+                    <div class="stamp-side">For Ankit Brokers<br><br><br>Proprietor</div>
                 </div>
             </div>
         </body>
-        </html>`;
+        </html>
+        `;
 
         await page.setContent(html, { waitUntil: 'networkidle0' });
         const pdfBuffer = await page.pdf({ 
             format: 'A4', 
             printBackground: true,
-            margin: { top: '10mm', bottom: '10mm', left: '10mm', right: '10mm' }
+            margin: { top: '20px', bottom: '20px', left: '20px', right: '20px' }
         });
         
         await browser.close();
         res.contentType("application/pdf").send(pdfBuffer);
-
     } catch (err) {
         if (browser) await browser.close();
         res.status(500).send(err.message);
@@ -176,4 +207,4 @@ app.post('/generate-pdf', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`Server live at http://localhost:${PORT}`));
