@@ -79,6 +79,15 @@ h3 {
     padding-bottom: 10px;
 }
 
+/* =========================================
+   4. INPUTS & FORM GRID
+   ========================================= */
+.form-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
 label {
     font-size: 11px;
     font-weight: bold;
@@ -88,46 +97,62 @@ label {
     display: block;
 }
 
-/* =========================================
-   4. INPUTS & SPACING
-   ========================================= */
-.form-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
 input, textarea {
     width: 100%;
     padding: 12px;
     border: 1px solid #cbd5e1;
     border-radius: 8px;
-    font-size: 16px; /* Prevents mobile zoom */
+    font-size: 16px;
     background: #f8fafc;
     color: #334155;
-    transition: all 0.2s;
-}
-
-textarea { height: 100px; }
-
-input:focus, textarea:focus {
-    outline: none;
-    border-color: #0ea5e9;
-    background: white;
-    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
 }
 
 input[readonly] {
     background: #f1f5f9;
     font-weight: bold;
     color: #0369a1;
-    border-style: dashed;
 }
 
 .total-section { margin-top: 20px; }
 
 /* =========================================
-   5. BUTTONS
+   5. TABLE FIX (MOBILE SCROLL)
+   ========================================= */
+/* This container prevents the entire website from shaking/scrolling */
+.table-container {
+    width: 100%;
+    overflow-x: auto; /* 🔥 This enables horizontal swipe */
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px; /* 🔥 Forces the table to be wide enough to hold data */
+    background: white;
+}
+
+th {
+    background: #1e293b;
+    color: white;
+    padding: 12px;
+    font-size: 13px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+td {
+    padding: 12px;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: center;
+    font-size: 14px;
+    white-space: nowrap; /* Prevents text from squishing into multiple lines */
+}
+
+/* =========================================
+   6. BUTTONS
    ========================================= */
 .btn {
     width: 100%;
@@ -144,57 +169,18 @@ input[readonly] {
 .btn-primary { background: #0ea5e9; color: white; }
 .btn-danger { background: #ef4444; color: white; }
 
-/* Small buttons for the table */
+/* Action buttons inside the table */
 .btn-sm {
-    padding: 8px 12px;
+    padding: 6px 12px;
     font-size: 12px;
-    border-radius: 6px;
+    border-radius: 4px;
     cursor: pointer;
     margin: 2px;
     border: 1px solid #cbd5e1;
 }
 
 /* =========================================
-   6. RESPONSIVE TABLE (THE MOBILE FIX)
-   ========================================= */
-.table-container {
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 700px; /* Forces scroll on small screens */
-}
-
-th {
-    background: #1e293b;
-    color: white;
-    padding: 12px;
-    font-size: 13px;
-    text-align: left;
-}
-
-td {
-    padding: 12px;
-    border-bottom: 1px solid #e2e8f0;
-    font-size: 14px;
-    background: white;
-}
-
-/* Sticky Action Column */
-.sticky-col {
-    position: sticky;
-    right: 0;
-    background: #f8fafc !important;
-    border-left: 2px solid #e2e8f0;
-    z-index: 1;
-}
-
-/* =========================================
-   7. LAPTOP VIEW ADJUSTMENTS
+   7. LAPTOP VIEW (RESTORES GRID)
    ========================================= */
 @media (min-width: 600px) {
     .form-grid {
@@ -209,10 +195,7 @@ td {
         margin-right: 10px;
     }
 
-    .table-container {
-        overflow-x: visible; /* No scroll needed on desktop */
-    }
-    
+    /* On laptop, we don't need a scrollbar if the screen is wide enough */
     table {
         min-width: 100%;
     }
