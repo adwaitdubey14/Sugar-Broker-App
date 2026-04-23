@@ -2,7 +2,7 @@
    1. GLOBAL & BOX FIXES
    ========================================= */
 * {
-    box-sizing: border-box; /* 🔥 PREVENTS BOXES FROM GOING OUT OF RANGE */
+    box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
 }
 
@@ -16,7 +16,7 @@ body {
 }
 
 /* =========================================
-   2. HEADER & NAVIGATION (Color Fix)
+   2. HEADER & NAVIGATION
    ========================================= */
 .header {
     background: #1e293b;
@@ -29,7 +29,7 @@ body {
 
 .nav {
     display: flex;
-    background: #1e293b; /* Dark base for non-selected */
+    background: #1e293b;
     position: sticky;
     top: 0;
     z-index: 1000;
@@ -39,8 +39,8 @@ body {
     flex: 1;
     padding: 15px 10px;
     border: none;
-    background: #1e293b; /* 🔥 Non-selected background */
-    color: #94a3b8;      /* 🔥 Non-selected text color */
+    background: #1e293b;
+    color: #94a3b8;
     cursor: pointer;
     font-size: 14px;
     font-weight: 600;
@@ -48,8 +48,8 @@ body {
 }
 
 .nav button.active {
-    background: #0ea5e9; /* 🔥 Selected background (Bright Blue) */
-    color: white;        /* 🔥 Selected text color */
+    background: #0ea5e9;
+    color: white;
     border-bottom: 3px solid #f0f9ff;
 }
 
@@ -64,7 +64,7 @@ body {
 
 .card {
     background: white;
-    padding: 20px;
+    padding: 15px;
     border-radius: 12px;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
@@ -79,61 +79,41 @@ h3 {
     padding-bottom: 10px;
 }
 
-h4 {
-    margin: 0 0 10px 0;
-    font-size: 13px;
-    color: #64748b;
-    text-transform: uppercase;
-}
-
-/* =========================================
-   4. UNIFIED INPUTS & SPACING (The Main Fix)
-   ========================================= */
-/* Default Mobile: All blocks stack with uniform spacing */
-.form-grid, 
-.utr-grid, 
-.additional-box,
-.utr-box {
-    display: flex;
-    flex-direction: column;
-    gap: 15px; /* 🔥 UNIFORM VERTICAL SPACING */
-}
-
-.label-group {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
 label {
     font-size: 11px;
     font-weight: bold;
     color: #64748b;
     text-transform: uppercase;
-    letter-spacing: 0.02em;
-    margin-left: 2px;
+    margin-bottom: 5px;
+    display: block;
 }
 
-input, textarea, input[type="date"] {
+/* =========================================
+   4. INPUTS & SPACING
+   ========================================= */
+.form-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+input, textarea {
     width: 100%;
     padding: 12px;
     border: 1px solid #cbd5e1;
     border-radius: 8px;
-    font-size: 15px;
+    font-size: 16px; /* Prevents mobile zoom */
     background: #f8fafc;
     color: #334155;
-    height: 48px; /* 🔥 UNIFIED HEIGHT FOR ALL BLOCKS */
     transition: all 0.2s;
 }
 
-textarea {
-    height: 100px; /* Textarea is the only exception */
-}
+textarea { height: 100px; }
 
 input:focus, textarea:focus {
     outline: none;
     border-color: #0ea5e9;
-    background: #ffffff;
+    background: white;
     box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
 }
 
@@ -143,6 +123,8 @@ input[readonly] {
     color: #0369a1;
     border-style: dashed;
 }
+
+.total-section { margin-top: 20px; }
 
 /* =========================================
    5. BUTTONS
@@ -160,27 +142,62 @@ input[readonly] {
 
 .btn-success { background: #22c55e; color: white; }
 .btn-primary { background: #0ea5e9; color: white; }
+.btn-danger { background: #ef4444; color: white; }
+
+/* Small buttons for the table */
+.btn-sm {
+    padding: 8px 12px;
+    font-size: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin: 2px;
+    border: 1px solid #cbd5e1;
+}
 
 /* =========================================
-   6. TABLE & LAPTOP VIEW
+   6. RESPONSIVE TABLE (THE MOBILE FIX)
    ========================================= */
-#tableSection {
+.table-container {
     width: 100%;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 700px;
+    min-width: 700px; /* Forces scroll on small screens */
 }
 
-th { background: #1e293b; color: white; padding: 12px; font-size: 13px; }
-td { padding: 12px; border: 1px solid #e2e8f0; text-align: center; font-size: 14px; }
+th {
+    background: #1e293b;
+    color: white;
+    padding: 12px;
+    font-size: 13px;
+    text-align: left;
+}
 
+td {
+    padding: 12px;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 14px;
+    background: white;
+}
+
+/* Sticky Action Column */
+.sticky-col {
+    position: sticky;
+    right: 0;
+    background: #f8fafc !important;
+    border-left: 2px solid #e2e8f0;
+    z-index: 1;
+}
+
+/* =========================================
+   7. LAPTOP VIEW ADJUSTMENTS
+   ========================================= */
 @media (min-width: 600px) {
-    /* Restore Grid for Laptop */
-    .form-grid, .utr-grid {
+    .form-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 20px;
@@ -191,11 +208,14 @@ td { padding: 12px; border: 1px solid #e2e8f0; text-align: center; font-size: 14
         min-width: 160px;
         margin-right: 10px;
     }
+
+    .table-container {
+        overflow-x: visible; /* No scroll needed on desktop */
+    }
+    
+    table {
+        min-width: 100%;
+    }
 }
 
 .hidden { display: none; }
-
-.total-section{
-    margin-top: 20px
-
-}

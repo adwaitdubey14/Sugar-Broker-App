@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Delivery Order System | ANKIT BROKERS</title>
     <link rel="stylesheet" href="style.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 </head>
 <body>
     <div class="header">Delivery Order System - ANKIT BROKERS</div>
@@ -35,7 +35,7 @@
                     <input id="billName" placeholder="Name">
                     <input id="billPlace" placeholder="Address">
                     <input id="billCity" placeholder="City">
-                    <input id="billGST" placeholder="GSTIN">
+                    <input id="billGST" placeholder="GSTIN" class="gst-input">
                 </div>
             </div>
 
@@ -45,7 +45,7 @@
                     <input id="shipName" placeholder="Name">
                     <input id="shipPlace" placeholder="Address">
                     <input id="shipCity" placeholder="City"> 
-                    <input id="shipGST" placeholder="GSTIN">
+                    <input id="shipGST" placeholder="GSTIN" class="gst-input">
                 </div>
             </div>
 
@@ -65,7 +65,8 @@
 
             <div class="card">
                 <h3>Payment Details (UTR)</h3>
-                <div id="utrContainer"></div> <button class="btn btn-primary" type="button" onclick="addUTRRow()" style="width: auto; margin-top: 10px;">+ Add Payment Row</button>
+                <div id="utrContainer"></div> 
+                <button class="btn btn-primary" type="button" onclick="addUTRRow()" style="width: auto; margin-top: 10px;">+ Add Payment Row</button>
             </div>
 
             <div class="card">
@@ -83,30 +84,30 @@
             </div>
         </div>
 
-
-  
-
         <div id="tableSection" class="hidden">
-                  <div style="margin-bottom: 15px;">
-    <input type="text" id="searchInput" placeholder="🔍 Search by Client Name..." 
-           style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-</div>
+            <div class="card" style="margin-bottom: 15px;">
+                <input type="text" id="searchInput" placeholder="🔍 Search by Client Name..." 
+                       style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 16px;">
+            </div>
+            
             <div class="card">
                 <h3>Saved Records</h3>
-                <table id="dataTable">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>MD</th>
-                            <th>Party Name</th>
-                            <th>Qty</th>
-                            <th>Rate</th>
-                            <th>Total</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+                <div class="table-container">
+                    <table id="dataTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>MD</th>
+                                <th>Party Name</th>
+                                <th>Qty</th>
+                                <th>Rate</th>
+                                <th>Total</th>
+                                <th class="sticky-col">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
