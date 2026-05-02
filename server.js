@@ -181,7 +181,7 @@ app.post('/generate-pdf', async (req, res) => {
   .invocation {
     text-align: center;
     font-weight: bold;
-    font-size: 11px;
+    font-size: 15px;
     margin-bottom: 6px;
     letter-spacing: 0.5px;
   }
@@ -369,7 +369,7 @@ app.post('/generate-pdf', async (req, res) => {
 </head>
 <body>
  
-<div class="invocation">|| Shri Mahavirai Namah: ||</div>
+<div class="invocation">|| जय श्री कृष्णा ||</div>
  
 <div class="outer">
  

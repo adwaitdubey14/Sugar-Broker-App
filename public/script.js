@@ -245,3 +245,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if(qtyInput) qtyInput.addEventListener('input', calculate);
     if(rateInput) rateInput.addEventListener('input', calculate);
 });
+
+function copyBilling() {
+    document.getElementById('shipName').value = document.getElementById('billName').value;
+    document.getElementById('shipPlace').value = document.getElementById('billPlace').value;
+    document.getElementById('shipCity').value = document.getElementById('billCity').value;
+    document.getElementById('shipGST').value = document.getElementById('billGST').value;
+    
+    // Trigger the GST listener manually to capitalize if needed
+    const event = new Event('input');
+    document.getElementById('shipGST').dispatchEvent(event);
+}

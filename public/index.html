@@ -54,15 +54,20 @@
                 </div>
             </div>
 
-            <div class="card">
-                <h3>Shipped To</h3>
-                <div class="form-grid">
-                    <input id="shipName" placeholder="Name">
-                    <input id="shipPlace" placeholder="Address">
-                    <input id="shipCity" placeholder="City"> 
-                    <input id="shipGST" placeholder="GSTIN" class="gst-input">
-                </div>
-            </div>
+         <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">
+        <h3 style="margin: 0; border: none;">Shipped To</h3>
+        <button type="button" onclick="copyBilling()" style="background: #0ea5e9; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 12px; cursor: pointer;">
+            Same as Bill To
+        </button>
+    </div>
+    <div class="form-grid">
+        <input id="shipName" placeholder="Name">
+        <input id="shipPlace" placeholder="Address">
+        <input id="shipCity" placeholder="City"> 
+        <input id="shipGST" placeholder="GSTIN" class="gst-input">
+    </div>
+</div>
 
             <div class="card">
                 <h3>Order Details</h3>
