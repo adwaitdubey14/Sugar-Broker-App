@@ -23,7 +23,12 @@ const ReceiptSchema = new mongoose.Schema({
     billTo: { name: String, place: String, city: String, gst: String },
     shipTo: { name: String, place: String, city: String, gst: String },
     utrDetails: [{ utrNumber: String, amount: String, date: String }],
-    orderItems: [{ grade: String, rate: String, quantity: String }],
+    orderItems: [{
+    season: String,
+    grade: String,
+    rate: String,
+    quantity: String
+}],
     vehicle: String,
     total: String,
     note: String

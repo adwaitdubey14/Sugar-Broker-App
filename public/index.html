@@ -1,157 +1,4 @@
-<!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#0ea5e9">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="icon-192.png">
-    <link rel="icon" type="image/png" href="icon-192.png">
-    <meta charset="UTF-8">
-    <title>Delivery Order System | ANKIT BROKERS</title>
-    <link rel="stylesheet" href="style.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-</head>
-<body>
-    <div class="header">Delivery Order System - ANKIT BROKERS</div>
-    <div class="nav">
-        <button id="formBtn" class="active" onclick="showForm()">New Entry</button>
-        <button id="tableBtn" onclick="showTable()">Records</button>
-    </div>
 
-    <div class="container">
-        <div id="formSection">
-            <div class="card">
-                <h3>Order Reference</h3>
-                <div class="form-grid">
-                    <div class="label-group">
-                        <label>DO. NO</label>
-                        <input id="doNumber" placeholder="e.g. 44">
-                    </div>
-                    <div class="label-group">
-                        <label>Mill Name (MD)</label>
-                        <input id="md" placeholder="Enter Mill Name">
-                    </div>
-                    <div class="label-group">
-                        <label>Order Date</label>
-                        <input type="date" id="date">
-                    </div>
-                    <div class="label-group">
-                        <label>Tender Date</label>
-                        <input type="date" id="tenderDate">
-                    </div>
-                   
-                </div>
-            </div>
-
-            <div class="card">
-                <h3>Bill To</h3>
-                <div class="form-grid">
-                    <input id="billName" placeholder="Name">
-                    <input id="billPlace" placeholder="Address">
-                    <input id="billCity" placeholder="City">
-                    <input id="billGST" placeholder="GSTIN" class="gst-input">
-                </div>
-            </div>
-
-            <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">
-                    <h3 style="margin: 0; border: none;">Shipped To</h3>
-                    <button type="button" onclick="copyBilling()" style="background: #0ea5e9; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 12px; cursor: pointer;">
-                        Same as Bill To
-                    </button>
-                </div>
-                <div class="form-grid">
-                    <input id="shipName" placeholder="Name">
-                    <input id="shipPlace" placeholder="Address">
-                    <input id="shipCity" placeholder="City"> 
-                    <input id="shipGST" placeholder="GSTIN" class="gst-input">
-                </div>
-            </div>
-
-           <div class="card">
-    <h3>Order Details</h3>
-    <div id="gradeContainer"></div>
-    <button class="btn btn-primary" type="button" onclick="addGradeRow()" style="width: auto; margin-top: 10px;">+ Add Grade Row</button>
-    
-    <div class="form-grid" style="margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
-        <div class="label-group">
-            <label>Vehicle No</label>
-            <input id="vehicle" placeholder="Vehicle No">
-        </div>
-        <div class="label-group">
-            <label>Total</label>
-            <input id="total" placeholder="Total" readonly>
-        </div>
-    </div>
-</div>
-
-            <div class="card">
-                <h3>Payment Details (UTR)</h3>
-                <div id="utrContainer"></div> 
-                <button class="btn btn-primary" type="button" onclick="addUTRRow()" style="width: auto; margin-top: 10px;">+ Add Payment Row</button>
-            </div>
-
-            <div class="card">
-                <h3>Additional</h3>
-                <div class="additional-box">
-                    <textarea id="note" placeholder="Any extra notes..."></textarea>
-                </div>
-            </div>
-
-            <div class="action-footer">
-                <button class="btn btn-success" onclick="saveData()">Save Record</button>
-                <button class="btn btn-primary" onclick="generatePDF()">Generate PDF</button>
-                <button class="btn btn-danger" onclick="resetForm()">Reset Form</button>
-            </div>
-        </div>
-
-        <div id="tableSection" class="hidden">
-            <div class="card" style="margin-bottom: 15px;">
-                <input type="text" id="searchInput" placeholder="🔍 Search by Client Name..." 
-                       style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 16px;">
-            </div>
-            
-            <div class="card">
-                <h3>Saved Records</h3>
-                <div class="table-container">
-                    <table id="dataTable">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Mill</th>
-                                <th>Party Name</th>
-                                <th>Vehicle</th>
-                                <th>Total</th>
-                                <th class="sticky-col">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="script.js"></script>
-    <script>
-        function showForm() {
-            document.getElementById('formSection').classList.remove('hidden');
-            document.getElementById('tableSection').classList.add('hidden');
-            document.getElementById('formBtn').classList.add('active');
-            document.getElementById('tableBtn').classList.remove('active');
-        }
-        function showTable() {
-            document.getElementById('formSection').classList.add('hidden');
-            document.getElementById('tableSection').classList.remove('hidden');
-            document.getElementById('tableBtn').classList.add('active');
-            document.getElementById('formBtn').classList.remove('active');
-        }
-    </script>
-</body>
-</html> -->
-
-<!-- Replace your index.html with this updated structure -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -180,7 +27,7 @@
             <div class="card">
                 <h3>Order Reference</h3>
                 <div class="form-grid">
-                    <div class="label-group"><label>DO. NO</label><input id="doNumber" placeholder="44"></div>
+                    <div class="label-group"><label>DO. NO</label><input id="doNumber" placeholder="Enter DO. Number"></div>
                     <div class="label-group"><label>Mill Name (MD)</label><input id="md" placeholder="Enter Mill Name"></div>
                     <div class="label-group"><label>Order Date</label><input type="date" id="date"></div>
                     <div class="label-group"><label>Tender Date</label><input type="date" id="tenderDate"></div>
@@ -213,9 +60,9 @@
             <div class="card">
                 <h3>Order Details (Grades)</h3>
                 <div id="gradeContainer"></div>
-                <button class="btn btn-primary" type="button" onclick="addGradeRow()">+ Add Grade Row</button>
+                <button class="btn btn-primary" type="button" onclick="addGradeRow()">+ Add Row</button>
                 <div class="form-grid" style="margin-top:15px; border-top:1px solid #eee; padding-top:15px;">
-                    <div class="label-group"><label>Vehicle No</label><input id="vehicle" placeholder="MH 16 AY 5656"></div>
+                    <div class="label-group"><label>Vehicle No</label><input id="vehicle" placeholder="Enter Vehicle Number"></div>
                     <div class="label-group"><label>Total (Inc. 5% GST)</label><input id="total" placeholder="0.00" readonly></div>
                 </div>
             </div>
