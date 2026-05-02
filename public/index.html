@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-   <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#0ea5e9">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="apple-touch-icon" href="icon-192.png">
-<link rel="icon" type="image/png" href="icon-192.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0ea5e9">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="icon" type="image/png" href="icon-192.png">
     <meta charset="UTF-8">
     <title>Delivery Order System | ANKIT BROKERS</title>
     <link rel="stylesheet" href="style.css">
@@ -22,16 +22,25 @@
     <div class="container">
         <div id="formSection">
             <div class="card">
-                <h3>Basic Details</h3>
+                <h3>Order Reference</h3>
                 <div class="form-grid">
+                    <div class="label-group">
+                        <label>DO. NO</label>
+                        <input id="doNumber" placeholder="e.g. 44">
+                    </div>
+                    <div class="label-group">
+                        <label>Mill Name (MD)</label>
+                        <input id="md" placeholder="Enter Mill Name">
+                    </div>
                     <div class="label-group">
                         <label>Order Date</label>
                         <input type="date" id="date">
                     </div>
                     <div class="label-group">
-                        <label>Managing Director</label>
-                        <input id="md" placeholder="Enter Name">
+                        <label>Tender Date</label>
+                        <input type="date" id="tenderDate">
                     </div>
+                    
                 </div>
             </div>
 
@@ -58,13 +67,14 @@
             <div class="card">
                 <h3>Order Details</h3>
                 <div class="form-grid">
-                    <input type="number" id="quantity" placeholder="Quantity (Bags)">
-                    <input id="grade" placeholder="Grade">
-                    <input type="number" id="rate" placeholder="Rate">
+                    <input id="grade" placeholder="Grade (e.g. S/30)">
+                    <input type="number" id="rate" placeholder="Mill Rate">
+                    <input type="number" id="quantity" placeholder="Quintals">
                     <input id="vehicle" placeholder="Vehicle No">
+                    <input id="season" placeholder="Season (eg 2025-26)">
                 </div>
                 <div class="total-section">
-                    <label>Total Amount</label>
+                    <label>Total (Inc. 5% GST)</label>
                     <input id="total" placeholder="Total" readonly>
                 </div>
             </div>
@@ -78,7 +88,6 @@
             <div class="card">
                 <h3>Additional</h3>
                 <div class="additional-box">
-                    <input id="transportId" placeholder="Transport ID">
                     <textarea id="note" placeholder="Any extra notes..."></textarea>
                 </div>
             </div>
@@ -103,9 +112,9 @@
                         <thead>
                             <tr>
                                 <th>Date</th>
-                                <th>MD</th>
+                                <th>Mill</th>
                                 <th>Party Name</th>
-                                <th>Qty</th>
+                                <th>Quintals</th>
                                 <th>Rate</th>
                                 <th>Total</th>
                                 <th class="sticky-col">Actions</th>
