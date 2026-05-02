@@ -1,204 +1,35 @@
-/* =========================================
-   1. GLOBAL & BOX FIXES
-   ========================================= */
-* {
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
-}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f1f5f9; color: #1e293b; }
 
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
-    padding: 0;
-    background: #f1f5f9;
-    color: #1e293b;
-    line-height: 1.5;
-}
+.header { background: #1e293b; color: white; padding: 18px; text-align: center; font-weight: bold; }
+.nav { display: flex; background: #1e293b; position: sticky; top: 0; z-index: 1000; }
+.nav button { flex: 1; padding: 15px; border: none; background: #1e293b; color: #94a3b8; font-weight: 600; cursor: pointer; }
+.nav button.active { background: #0ea5e9; color: white; border-bottom: 3px solid #f0f9ff; }
 
-/* =========================================
-   2. HEADER & NAVIGATION
-   ========================================= */
-.header {
-    background: #1e293b;
-    color: white;
-    padding: 18px 15px;
-    font-size: 18px;
-    font-weight: bold;
-    text-align: center;
-}
+.container { padding: 15px; max-width: 1000px; margin: 0 auto; }
+.card { background: white; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
+h3 { margin-bottom: 15px; font-size: 17px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; }
 
-.nav {
-    display: flex;
-    background: #1e293b;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-}
+.form-grid { display: flex; flex-direction: column; gap: 15px; }
+label { font-size: 11px; font-weight: bold; color: #64748b; text-transform: uppercase; margin-bottom: 5px; }
+input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 16px; background: #f8fafc; }
 
-.nav button {
-    flex: 1;
-    padding: 15px 10px;
-    border: none;
-    background: #1e293b;
-    color: #94a3b8;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 600;
-    transition: all 0.2s ease;
-}
+.table-container { width: 100%; overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 8px; }
+table { width: 100%; border-collapse: collapse; min-width: 800px; background: white; }
+th { background: #1e293b; color: white; padding: 12px; font-size: 13px; }
+td { padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: center; white-space: nowrap; }
 
-.nav button.active {
-    background: #0ea5e9;
-    color: white;
-    border-bottom: 3px solid #f0f9ff;
-}
-
-/* =========================================
-   3. LAYOUT & CARDS
-   ========================================= */
-.container {
-    padding: 15px;
-    max-width: 1000px;
-    margin: 0 auto;
-}
-
-.card {
-    background: white;
-    padding: 15px;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
-    border: 1px solid #e2e8f0;
-}
-
-h3 {
-    margin: 0 0 15px 0;
-    font-size: 17px;
-    color: #0f172a;
-    border-bottom: 2px solid #f1f5f9;
-    padding-bottom: 10px;
-}
-
-/* =========================================
-   4. INPUTS & FORM GRID
-   ========================================= */
-.form-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-label {
-    font-size: 11px;
-    font-weight: bold;
-    color: #64748b;
-    text-transform: uppercase;
-    margin-bottom: 5px;
-    display: block;
-}
-
-input, textarea {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-    font-size: 16px;
-    background: #f8fafc;
-    color: #334155;
-}
-
-input[readonly] {
-    background: #f1f5f9;
-    font-weight: bold;
-    color: #0369a1;
-}
-
-.total-section { margin-top: 20px; }
-
-/* =========================================
-   5. TABLE FIX (MOBILE SCROLL)
-   ========================================= */
-/* This container prevents the entire website from shaking/scrolling */
-.table-container {
-    width: 100%;
-    overflow-x: auto; /* 🔥 This enables horizontal swipe */
-    -webkit-overflow-scrolling: touch;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 800px; /* 🔥 Forces the table to be wide enough to hold data */
-    background: white;
-}
-
-th {
-    background: #1e293b;
-    color: white;
-    padding: 12px;
-    font-size: 13px;
-    text-align: center;
-    white-space: nowrap;
-}
-
-td {
-    padding: 12px;
-    border-bottom: 1px solid #e2e8f0;
-    text-align: center;
-    font-size: 14px;
-    white-space: nowrap; /* Prevents text from squishing into multiple lines */
-}
-
-/* =========================================
-   6. BUTTONS
-   ========================================= */
-.btn {
-    width: 100%;
-    padding: 14px;
-    border: none;
-    border-radius: 8px;
-    font-size: 15px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 10px;
-}
-
+.btn { width: 100%; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; border: none; }
 .btn-success { background: #22c55e; color: white; }
 .btn-primary { background: #0ea5e9; color: white; }
 .btn-danger { background: #ef4444; color: white; }
+.btn-edit { background: #64748b; color: white; }
 
-/* Action buttons inside the table */
-.btn-sm {
-    padding: 6px 12px;
-    font-size: 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    margin: 2px;
-    border: 1px solid #cbd5e1;
-}
+.btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 4px; margin: 2px; border: none; cursor: pointer; font-weight: bold; }
 
-/* =========================================
-   7. LAPTOP VIEW (RESTORES GRID)
-   ========================================= */
 @media (min-width: 600px) {
-    .form-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-    }
-    
-    .btn {
-        width: auto;
-        min-width: 160px;
-        margin-right: 10px;
-    }
-
-    /* On laptop, we don't need a scrollbar if the screen is wide enough */
-    table {
-        min-width: 100%;
-    }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .btn { width: auto; min-width: 160px; }
+    table { min-width: 100%; }
 }
-
-.hidden { display: none; }
+.hidden { display: none !important; }

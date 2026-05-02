@@ -1,4 +1,4 @@
-let editId = null;
+/* let editId = null;
 
 function validateGST(gst) {
     if (!gst || gst.trim() === "") return true;
@@ -31,58 +31,79 @@ function setupSearchFilter() {
         const filter = this.value.toUpperCase();
         const rows = document.querySelector("#dataTable tbody").rows;
         for (let i = 0; i < rows.length; i++) {
-            // Index 2 is "Party Name"
             const clientName = rows[i].cells[2].textContent || rows[i].cells[2].innerText;
             rows[i].style.display = clientName.toUpperCase().includes(filter) ? "" : "none";
         }
     });
 }
 
+// DYNAMIC GRADE ROWS logic
+function addGradeRow(data = { season: '2025-26', grade: '', rate: '', quantity: '' }) {
+    const container = document.getElementById('gradeContainer');
+    const div = document.createElement('div');
+    div.className = 'grade-row';
+    div.style.marginBottom = "10px";
+    div.style.padding = "10px";
+    div.style.background = "#f8fafc";
+    div.style.borderRadius = "8px";
+    div.innerHTML = `
+        <div class="form-grid">
+            <input class="row-season" placeholder="Season" value="${data.season || ''}">
+            <input class="row-grade" placeholder="Grade" value="${data.grade || ''}">
+            <input class="row-rate" type="number" placeholder="Rate" value="${data.rate || ''}" oninput="calculate()">
+            <input class="row-qty" type="number" placeholder="Quintals" value="${data.quantity || ''}" oninput="calculate()">
+            <button class="btn-danger" type="button" onclick="this.parentElement.parentElement.remove(); calculate();">Remove</button>
+        </div>
+    `;
+    container.appendChild(div);
+}
+
 function addUTRRow(data = { utrNumber: '', amount: '', date: '' }) {
     const container = document.getElementById('utrContainer');
     const div = document.createElement('div');
     div.className = 'utr-row';
-    div.style.borderBottom = "1px solid #e2e8f0";
-    div.style.paddingBottom = "15px";
-    div.style.marginBottom = "15px";
     div.innerHTML = `
-        <div class="form-grid">
-            <div class="label-group"><label>UTR Number</label><input class="utr-num" value="${data.utrNumber || ''}"></div>
-            <div class="label-group"><label>Amount</label><input class="utr-amt" type="number" value="${data.amount || ''}"></div>
-            <div class="label-group"><label>Date</label><input class="utr-date" type="date" value="${data.date || ''}"></div>
-            <button class="btn btn-danger" type="button" onclick="this.parentElement.parentElement.remove()">Remove</button>
+        <div class="form-grid" style="margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:10px;">
+            <input class="utr-num" placeholder="UTR Number" value="${data.utrNumber || ''}">
+            <input class="utr-amt" type="number" placeholder="Amount" value="${data.amount || ''}">
+            <input class="utr-date" type="date" value="${data.date || ''}">
+            <button class="btn-danger" type="button" onclick="this.parentElement.parentElement.remove()">Remove</button>
         </div>
     `;
     container.appendChild(div);
 }
 
 function calculate() {
-    const qtyEl = document.getElementById('quantity');
-    const rateEl = document.getElementById('rate');
-    const totalEl = document.getElementById('total');
-    
-    if(!qtyEl || !rateEl || !totalEl) return;
+    let subtotal = 0;
+    const rows = document.querySelectorAll('.grade-row');
+    rows.forEach(row => {
+        const rate = parseFloat(row.querySelector('.row-rate').value) || 0;
+        const qty = parseFloat(row.querySelector('.row-qty').value) || 0;
+        subtotal += (rate * qty);
+    });
+    document.getElementById('total').value = (subtotal * 1.05).toFixed(2);
+}
 
-    const quantity = parseFloat(qtyEl.value) || 0;
-    const rate = parseFloat(rateEl.value) || 0;
-    const subtotal = quantity * rate;
-    const totalWithGST = subtotal * 1.05; // 5% GST calculation
-    totalEl.value = totalWithGST.toFixed(2);
+function copyBilling() {
+    document.getElementById('shipName').value = document.getElementById('billName').value;
+    document.getElementById('shipPlace').value = document.getElementById('billPlace').value;
+    document.getElementById('shipCity').value = document.getElementById('billCity').value;
+    document.getElementById('shipGST').value = document.getElementById('billGST').value;
 }
 
 function getFormData() {
-    const utrRows = document.querySelectorAll('.utr-row');
-    const utrArray = Array.from(utrRows).map(row => ({
-        utrNumber: row.querySelector('.utr-num').value,
-        amount: row.querySelector('.utr-amt').value,
-        date: row.querySelector('.utr-date').value
+    const gradeRows = document.querySelectorAll('.grade-row');
+    const orderItems = Array.from(gradeRows).map(row => ({
+        season: row.querySelector('.row-season').value,
+        grade: row.querySelector('.row-grade').value,
+        rate: row.querySelector('.row-rate').value,
+        quantity: row.querySelector('.row-qty').value
     }));
 
     return {
         doNumber: document.getElementById('doNumber').value,
         date: document.getElementById('date').value,
         tenderDate: document.getElementById('tenderDate').value,
-        season: document.getElementById('season').value,
         md: document.getElementById('md').value,
         billTo: {
             name: document.getElementById('billName').value,
@@ -96,10 +117,12 @@ function getFormData() {
             city: document.getElementById('shipCity').value,
             gst: document.getElementById('shipGST').value
         },
-        utrDetails: utrArray,
-        quantity: document.getElementById('quantity').value,
-        grade: document.getElementById('grade').value,
-        rate: document.getElementById('rate').value,
+        orderItems, // Now includes Season per item
+        utrDetails: Array.from(document.querySelectorAll('.utr-row')).map(row => ({
+            utrNumber: row.querySelector('.utr-num').value,
+            amount: row.querySelector('.utr-amt').value,
+            date: row.querySelector('.utr-date').value
+        })),
         vehicle: document.getElementById('vehicle').value,
         total: document.getElementById('total').value,
         note: document.getElementById('note').value
@@ -108,28 +131,17 @@ function getFormData() {
 
 async function saveData() {
     const data = getFormData();
-    if (!validateGST(data.billTo.gst) || !validateGST(data.shipTo.gst)) {
-        alert("❌ Invalid GST Number.");
-        return;
-    }
     if (editId) data.id = editId;
-    
-    try {
-        const response = await fetch('/save', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
-        if(response.ok) {
-            alert("✅ Record Saved Successfully");
-            editId = null;
-            await loadData();
-            showTable(); // Ensure this function exists in your HTML <script>
-            resetForm();
-        }
-    } catch (err) {
-        alert("Error saving data");
-    }
+    await fetch('/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+    alert("✅ Record Saved Successfully");
+    editId = null;
+    await loadData();
+    showTable();
+    resetForm();
 }
 
 async function loadData() {
@@ -138,15 +150,13 @@ async function loadData() {
     const table = document.querySelector('#dataTable tbody');
     table.innerHTML = '';
     data.forEach(item => {
-        // Use item._id if item.id is undefined
         const id = item.id || item._id; 
         table.innerHTML += `
             <tr>
                 <td>${item.date || ''}</td>
                 <td>${item.md || ''}</td>
                 <td>${item.billTo?.name || ''}</td>
-                <td>${item.quantity || ''}</td>
-                <td>${item.rate || ''}</td>
+                <td>${item.vehicle || ''}</td>
                 <td>${item.total || ''}</td>
                 <td>
                     <button class="btn-sm" onclick="editData('${id}')">Edit</button>
@@ -165,8 +175,7 @@ async function downloadPDF(id) {
 }
 
 function generatePDF() { 
-    const data = getFormData();
-    sendToPDF(data); 
+    sendToPDF(getFormData()); 
 }
 
 async function sendToPDF(itemData) {
@@ -182,13 +191,11 @@ async function sendToPDF(itemData) {
         a.href = url;
         a.download = `DO_${itemData.doNumber || 'Draft'}.pdf`;
         a.click();
-    } catch (err) { 
-        alert("PDF Error: Is the server sleeping?"); 
-    }
+    } catch (err) { alert("PDF Error"); }
 }
 
 async function deleteData(id) {
-    if (confirm('Are you sure you want to delete this record?')) {
+    if (confirm('Delete?')) {
         await fetch('/delete/' + encodeURIComponent(id), { method: 'DELETE' });
         loadData();
     }
@@ -214,45 +221,274 @@ async function editData(id) {
     document.getElementById('shipPlace').value = item.shipTo?.place || '';
     document.getElementById('shipCity').value = item.shipTo?.city || '';
     document.getElementById('shipGST').value = item.shipTo?.gst || '';
-    document.getElementById('quantity').value = item.quantity || '';
-    document.getElementById('grade').value = item.grade || '';
-    document.getElementById('rate').value = item.rate || '';
     document.getElementById('vehicle').value = item.vehicle || '';
     document.getElementById('total').value = item.total || '';
     document.getElementById('note').value = item.note || '';
     
+    // Fill Dynamic Grades
+    document.getElementById('gradeContainer').innerHTML = '';
+    (item.orderItems || []).forEach(g => addGradeRow(g));
+
+    // Fill Dynamic UTRs
     document.getElementById('utrContainer').innerHTML = '';
     (item.utrDetails || []).forEach(u => addUTRRow(u));
-    showForm(); // Changes tab back to form
+
+    showForm();
 }
 
 function resetForm() {
     editId = null;
     document.querySelectorAll('#formSection input, #formSection textarea').forEach(i => i.value = '');
+    document.getElementById('gradeContainer').innerHTML = '';
     document.getElementById('utrContainer').innerHTML = '';
+    addGradeRow();
     addUTRRow();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     loadData();
-    // No need to resetForm here if it causes blanking issues on load
     setupGSTListeners();
     setupSearchFilter();
-    
-    // Safety check for inputs before adding listeners
-    const qtyInput = document.getElementById('quantity');
-    const rateInput = document.getElementById('rate');
-    if(qtyInput) qtyInput.addEventListener('input', calculate);
-    if(rateInput) rateInput.addEventListener('input', calculate);
-});
+    resetForm();
+}); */
+
+
+
+let editId = null;
+
+// --- NAVIGATION ---
+function showForm() {
+    document.getElementById('formSection').classList.remove('hidden');
+    document.getElementById('tableSection').classList.add('hidden');
+    document.getElementById('formBtn').classList.add('active');
+    document.getElementById('tableBtn').classList.remove('active');
+}
+
+function showTable() {
+    document.getElementById('formSection').classList.add('hidden');
+    document.getElementById('tableSection').classList.remove('hidden');
+    document.getElementById('tableBtn').classList.add('active');
+    document.getElementById('formBtn').classList.remove('active');
+    loadData();
+}
+
+// --- DYNAMIC ROWS ---
+function addGradeRow(data = { season: '2025-26', grade: '', rate: '', quantity: '' }) {
+    const container = document.getElementById('gradeContainer');
+    const div = document.createElement('div');
+    div.className = 'dynamic-row grade-row';
+    div.innerHTML = `
+        <div class="row-inputs">
+            <div class="label-group"><label>Season</label><input class="row-season" value="${data.season || '2025-26'}"></div>
+            <div class="label-group"><label>Grade</label><input class="row-grade" value="${data.grade || ''}"></div>
+            <div class="label-group"><label>Rate</label><input class="row-rate" type="number" value="${data.rate || ''}" oninput="calculate()"></div>
+            <div class="label-group"><label>Qty</label><input class="row-qty" type="number" value="${data.quantity || ''}" oninput="calculate()"></div>
+        </div>
+        <button class="remove-btn" type="button" onclick="this.parentElement.remove(); calculate();">×</button>
+    `;
+    container.appendChild(div);
+}
+
+function addUTRRow(data = { utrNumber: '', amount: '', date: '' }) {
+    const container = document.getElementById('utrContainer');
+    const div = document.createElement('div');
+    div.className = 'dynamic-row utr-row';
+    div.innerHTML = `
+        <div class="row-inputs">
+            <div class="label-group"><label>UTR No</label><input class="utr-num" value="${data.utrNumber || ''}"></div>
+            <div class="label-group"><label>Amount</label><input class="utr-amt" type="number" value="${data.amount || ''}"></div>
+            <div class="label-group"><label>Date</label><input class="utr-date" type="date" value="${data.date || ''}"></div>
+        </div>
+        <button class="remove-btn" type="button" onclick="this.parentElement.remove()">×</button>
+    `;
+    container.appendChild(div);
+}
+
+function calculate() {
+    let subtotal = 0;
+    document.querySelectorAll('.grade-row').forEach(row => {
+        const rate = parseFloat(row.querySelector('.row-rate').value) || 0;
+        const qty = parseFloat(row.querySelector('.row-qty').value) || 0;
+        subtotal += (rate * qty);
+    });
+    document.getElementById('total').value = (subtotal * 1.05).toFixed(2);
+}
 
 function copyBilling() {
     document.getElementById('shipName').value = document.getElementById('billName').value;
     document.getElementById('shipPlace').value = document.getElementById('billPlace').value;
     document.getElementById('shipCity').value = document.getElementById('billCity').value;
     document.getElementById('shipGST').value = document.getElementById('billGST').value;
-    
-    // Trigger the GST listener manually to capitalize if needed
-    const event = new Event('input');
-    document.getElementById('shipGST').dispatchEvent(event);
 }
+
+function setupSearchFilter() {
+    const searchInput = document.getElementById('searchInput');
+    if (!searchInput) return;
+    searchInput.addEventListener('keyup', function() {
+        const filter = this.value.toUpperCase();
+        const rows = document.querySelector("#dataTable tbody").rows;
+        for (let i = 0; i < rows.length; i++) {
+            const clientName = rows[i].cells[2].textContent || rows[i].cells[2].innerText;
+            rows[i].style.display = clientName.toUpperCase().includes(filter) ? "" : "none";
+        }
+    });
+}
+
+function getFormData() {
+    return {
+        doNumber: document.getElementById('doNumber').value,
+        date: document.getElementById('date').value,
+        tenderDate: document.getElementById('tenderDate').value,
+        md: document.getElementById('md').value,
+        billTo: {
+            name: document.getElementById('billName').value,
+            place: document.getElementById('billPlace').value,
+            city: document.getElementById('billCity').value,
+            gst: document.getElementById('billGST').value
+        },
+        shipTo: {
+            name: document.getElementById('shipName').value,
+            place: document.getElementById('shipPlace').value,
+            city: document.getElementById('shipCity').value,
+            gst: document.getElementById('shipGST').value
+        },
+        orderItems: Array.from(document.querySelectorAll('.grade-row')).map(row => ({
+            season: row.querySelector('.row-season').value,
+            grade: row.querySelector('.row-grade').value,
+            rate: row.querySelector('.row-rate').value,
+            quantity: row.querySelector('.row-qty').value
+        })),
+        utrDetails: Array.from(document.querySelectorAll('.utr-row')).map(row => ({
+            utrNumber: row.querySelector('.utr-num').value,
+            amount: row.querySelector('.utr-amt').value,
+            date: row.querySelector('.utr-date').value
+        })),
+        vehicle: document.getElementById('vehicle').value,
+        total: document.getElementById('total').value
+    };
+}
+
+async function saveData() {
+    const data = getFormData();
+    if (editId) data.id = editId;
+    try {
+        await fetch('/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        alert("✅ Record Saved Successfully");
+        resetForm();
+        showTable();
+    } catch (e) { alert("Save Failed"); }
+}
+
+async function loadData() {
+    const res = await fetch('/data');
+    const data = await res.json();
+    const tableBody = document.querySelector('#dataTable tbody');
+    tableBody.innerHTML = '';
+    data.forEach(item => {
+        const id = item.id || item._id;
+        tableBody.innerHTML += `
+            <tr>
+                <td>${item.date || ''}</td>
+                <td>${item.md || ''}</td>
+                <td>${item.billTo?.name || ''}</td>
+                <td>${item.vehicle || ''}</td>
+                <td>${item.total || ''}</td>
+                <td>
+                    <button class="btn-sm btn-edit" onclick="editData('${id}')">Edit</button>
+                    <button class="btn-sm btn-danger" onclick="deleteData('${id}')">Del</button>
+                    <button class="btn-sm btn-primary" onclick="downloadPDF('${id}')">PDF</button>
+                </td>
+            </tr>`;
+    });
+}
+
+async function editData(id) {
+    const res = await fetch('/data');
+    const data = await res.json();
+    const item = data.find(i => (i.id || i._id) === id);
+    if (!item) return;
+    
+    editId = item.id || item._id;
+    document.getElementById('doNumber').value = item.doNumber || '';
+    document.getElementById('date').value = item.date || '';
+    document.getElementById('tenderDate').value = item.tenderDate || '';
+    document.getElementById('md').value = item.md || '';
+    document.getElementById('billName').value = item.billTo?.name || '';
+    document.getElementById('billPlace').value = item.billTo?.place || '';
+    document.getElementById('billCity').value = item.billTo?.city || '';
+    document.getElementById('billGST').value = item.billTo?.gst || '';
+    document.getElementById('shipName').value = item.shipTo?.name || '';
+    document.getElementById('shipPlace').value = item.shipTo?.place || '';
+    document.getElementById('shipCity').value = item.shipTo?.city || '';
+    document.getElementById('shipGST').value = item.shipTo?.gst || '';
+    document.getElementById('vehicle').value = item.vehicle || '';
+    document.getElementById('total').value = item.total || '';
+    
+    document.getElementById('gradeContainer').innerHTML = '';
+    (item.orderItems || []).forEach(g => addGradeRow(g));
+    document.getElementById('utrContainer').innerHTML = '';
+    (item.utrDetails || []).forEach(u => addUTRRow(u));
+    
+    showForm();
+}
+
+async function deleteData(id) {
+    if (confirm('Delete this record?')) {
+        await fetch('/delete/' + id, { method: 'DELETE' });
+        loadData();
+    }
+}
+
+async function downloadPDF(id) {
+    const res = await fetch('/data');
+    const data = await res.json();
+    const item = data.find(i => (i.id || i._id) === id);
+    if (!item) return;
+
+    const response = await fetch('/generate-pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(item)
+    });
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `DO_${item.doNumber || 'Record'}.pdf`;
+    a.click();
+}
+
+function generatePDF() { sendToPDF_Direct(getFormData()); }
+
+async function sendToPDF_Direct(itemData) {
+    const response = await fetch('/generate-pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(itemData)
+    });
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `DO_Draft.pdf`;
+    a.click();
+}
+
+function resetForm() {
+    editId = null;
+    document.querySelectorAll('#formSection input').forEach(i => i.value = '');
+    document.getElementById('gradeContainer').innerHTML = '';
+    document.getElementById('utrContainer').innerHTML = '';
+    addGradeRow();
+    addUTRRow();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadData();
+    setupSearchFilter();
+    resetForm();
+});
