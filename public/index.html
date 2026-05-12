@@ -5,6 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ankit Brokers | Delivery Order</title>
+    <link rel="manifest" href="/manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icon-192.png">
     <link rel="stylesheet" href="style.css">
     <style>
         .dynamic-row { display: flex; align-items: flex-end; gap: 10px; background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #e2e8f0; }
@@ -24,6 +28,45 @@
     <div class="container">
         <!-- FORM SECTION -->
         <div id="formSection">
+            <div class="card">
+    <h3>Business Details</h3>
+
+    <div class="form-grid">
+
+        <div class="label-group">
+            <label>Select Business</label>
+
+            <select id="businessType" onchange="handleBusinessChange()"
+                style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; font-size:16px; background:#f8fafc;">
+                
+                <option value="ankit">Ankit Brokers</option>
+                <option value="pawan">Pawan Sugar Brokers</option>
+                <option value="other">Other</option>
+
+            </select>
+        </div>
+
+    </div>
+
+    <div id="customBusinessFields" class="hidden" style="margin-top:15px;">
+
+        <div class="form-grid">
+
+            <input id="businessName" placeholder="Business Name">
+
+            <input id="businessAddress" placeholder="Business Address">
+
+            <input id="businessMobile1" placeholder="Mobile Number 1">
+
+            <input id="businessMobile2" placeholder="Mobile Number 2">
+
+            <input id="businessJurisdiction" placeholder="Jurisdiction City">
+
+        </div>
+
+    </div>
+</div>
+
             <div class="card">
                 <h3>Order Reference</h3>
                 <div class="form-grid">
