@@ -315,11 +315,40 @@ document.getElementById('businessJurisdiction').value = '';
     addUTRRow();
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+async function wakeServer() {
+
+    try {
+
+        await fetch('/ping');
+
+    } catch (e) {}
+
+    const loader = document.getElementById('loadingScreen');
+
+    if (!loader) return;
+
+    loader.style.opacity = '0';
+
+    setTimeout(() => {
+
+        loader.style.display = 'none';
+
+    }, 400);
+
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+
+    await wakeServer();
+
     loadData();
+
     setupSearchFilter();
+
     setupAutoCaps();
+
     resetForm();
+
 });
 
 
