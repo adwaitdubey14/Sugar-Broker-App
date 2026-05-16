@@ -2,84 +2,42 @@ const express = require('express');
 const mongoose = require('mongoose');
 const puppeteer = require('puppeteer-core');
 const chromium = require('@sparticuz/chromium');
-const fs = require('fs');
-const axios = require('axios');
 const app = express();
+const fs = require('fs');
+const path = require('path');
 
 app.use(express.json());
 app.use(express.static('public'));
 
-const MONGO_URI = process.env.MONGO_URI || "mongodb://admin:Aadibhai1@ac-eslpjtn-shard-00-00.2nhq0cl.mongodb.net:27017,ac-eslpjtn-shard-00-01.2nhq0cl.mongodb.net:27017,ac-eslpjtn-shard-00-02.2nhq0cl.mongodb.net:27017/AnkitBrokers?ssl=true&replicaSet=atlas-qr4pw0-shard-0&authSource=admin&appName=Cluster0";
+const MONGO_URI = process.env.MONGO_URI || "mongodb://admin:Aadibhai1@ac-eslpjtn-shard-00-00.2nhq0cl.mongodb.net:27017,ac-eslpjtn-shard-00-01.2nhq0cl.mongodb.net:27017,ac-eslpjtn-shard-00-02.2nhq0cl.mongodb.net:27017/AnkitBrokers?ssl=true&replicaSet=atlas-qr4pw0-shard-0&authSource=admin&appName=Cluster0"; 
 
 mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 10000, family: 4 })
 .then(() => console.log("✅ Database Connected"))
 .catch(err => console.error("❌ DB Error:", err.message));
 
-
 const ReceiptSchema = new mongoose.Schema({
     businessType: String,
-
-businessDetails: {
-    name: String,
-    subtitle: String,
-    address: String,
-    mobile1: String,
-    mobile2: String,
-    jurisdiction: String
-},
+    businessDetails: {
+        name: String,
+        subtitle: String,
+        address: String,
+        mobile1: String,
+        mobile2: String,
+        jurisdiction: String
+    },
     doNumber: String,
     date: String,
     tenderDate: String,
-    season: String,
     md: String,
     billTo: { name: String, place: String, city: String, gst: String },
     shipTo: { name: String, place: String, city: String, gst: String },
     utrDetails: [{ utrNumber: String, amount: String, date: String }],
-    orderItems: [{
-    season: String,
-    grade: String,
-    rate: String,
-    quantity: String
-}],
+    orderItems: [{ season: String, grade: String, rate: String, quantity: String }],
     vehicle: String,
-    total: String,
-    note: String
+    total: String
 }, { timestamps: true });
 
 const Receipt = mongoose.model('Receipt', ReceiptSchema);
-
-
-
-async function generateDONumber(businessType) {
-
-    let counter = await Counter.findOne({
-        businessType
-    });
-
-    if (!counter) {
-
-        counter = await Counter.create({
-            businessType,
-            current: 1
-        });
-
-    } else {
-
-        counter.current += 1;
-
-        await counter.save();
-    }
-
-    const prefix =
-        businessType === 'ankit'
-            ? 'AB'
-            : businessType === 'pawan'
-            ? 'PB'
-            : 'OT';
-
-    return `${prefix}-${counter.current}`;
-}
-
 
 app.get('/data', async (req, res) => {
     const receipts = await Receipt.find().sort({ createdAt: -1 });
@@ -87,82 +45,34 @@ app.get('/data', async (req, res) => {
 });
 
 app.get('/suggest/mills', async (req, res) => {
-
     const data = await Receipt.distinct('md');
-
     res.json(data.filter(Boolean));
 });
 
 app.get('/suggest/parties', async (req, res) => {
-
-    const billNames =
-        await Receipt.distinct('billTo.name');
-
-    const shipNames =
-        await Receipt.distinct('shipTo.name');
-
-    const combined = [
-
-        ...billNames,
-        ...shipNames
-
-    ];
-
+    const billNames = await Receipt.distinct('billTo.name');
+    const shipNames = await Receipt.distinct('shipTo.name');
+    const combined = [...billNames, ...shipNames];
     const unique = [...new Set(combined)];
-
     res.json(unique.filter(Boolean));
 });
 
 app.get('/next-do/:businessType', async (req, res) => {
-
     const type = req.params.businessType;
+    if (type === 'other') return res.json({ next: '' });
 
-    if (type === 'other') {
-
-        return res.json({
-            next: ''
-        });
-    }
-
-    const latest = await Receipt.findOne({
-        businessType: type
-    })
-    .sort({ createdAt: -1 });
-
+    const latest = await Receipt.findOne({ businessType: type }).sort({ createdAt: -1 });
     let nextNumber = 1;
-
     if (latest && latest.doNumber) {
-
-        nextNumber =
-            parseInt(latest.doNumber) + 1 || 1;
+        nextNumber = parseInt(latest.doNumber) + 1 || 1;
     }
-
-    res.json({
-        next: nextNumber
-    });
+    res.json({ next: nextNumber });
 });
 
-
 app.post('/save', async (req, res) => {
-
-    let savedRecord;
-
-    if (req.body.id) {
-
-        savedRecord = await Receipt.findByIdAndUpdate(
-            req.body.id,
-            req.body,
-            { new: true }
-        );
-
-    } else {
-
-        savedRecord = await new Receipt(req.body).save();
-    }
-
-    res.json({
-        message: 'Saved successfully'
-    });
+    if (req.body.id) await Receipt.findByIdAndUpdate(req.body.id, req.body);
+    else await new Receipt(req.body).save();
+    res.json({ message: 'Saved successfully' });
 });
 
 app.delete('/delete/:id', async (req, res) => {
@@ -170,7 +80,88 @@ app.delete('/delete/:id', async (req, res) => {
     res.json({ message: 'Deleted' });
 });
 
+app.get('/ping', (req, res) => res.send('Server Active'));
 
+// 🔥 COMPLETELY FIXED PARTY AUTOFILL LOGIC 🔥
+
+app.get('/party', async (req, res) => {
+
+    try {
+
+        const inputName = (req.query.name || '')
+            .trim()
+            .replace(/\s+/g, ' ')
+            .toUpperCase();
+        if (!inputName) {
+            return res.json({});
+        }
+
+        const records = await Receipt.find().sort({ createdAt: -1 });
+        for (const record of records) {
+
+            // BILL TO CHECK
+            if (record.billTo?.name) {
+
+                const dbName = record.billTo.name
+                    .trim()
+                    .replace(/\s+/g, ' ')
+                    .toUpperCase();
+
+                if (dbName === inputName) {
+
+                    return res.json({
+                        place: record.billTo.place || '',
+                        city: record.billTo.city || '',
+                        gst: record.billTo.gst || ''
+                    });
+                }
+            }
+
+            // SHIP TO CHECK
+            if (record.shipTo?.name) {
+
+                const dbName = record.shipTo.name
+                    .trim()
+                    .replace(/\s+/g, ' ')
+                    .toUpperCase();
+
+                if (dbName === inputName) {
+
+                    return res.json({
+                        place: record.shipTo.place || '',
+                        city: record.shipTo.city || '',
+                        gst: record.shipTo.gst || ''
+                    });
+                }
+            }
+        }
+
+        res.json({});
+
+    } catch (e) {
+
+
+        res.status(500).json({
+            error: 'Party Fetch Failed'
+        });
+    }
+});
+
+function getBase64Image(imagePath) {
+
+    try {
+
+        const image = fs.readFileSync(imagePath);
+
+        return `data:image/png;base64,${image.toString('base64')}`;
+
+    } catch (e) {
+
+        console.error('Signature Load Error:', e);
+
+        return '';
+    }
+}
 
 app.post('/generate-pdf', async (req, res) => {
     let browser;
@@ -192,166 +183,59 @@ app.post('/generate-pdf', async (req, res) => {
         browser = await puppeteer.launch(launchOptions);
         const page = await browser.newPage();
 
-const html = `
+        const ankitSignature = getBase64Image(
+    path.join(__dirname, 'public/signatures/ankit-sign.png')
+);
+
+const pawanSignature = getBase64Image(
+    path.join(__dirname, 'public/signatures/pawan-sign.png')
+);
+
+const signature =
+    data.businessType === 'pawan'
+        ? pawanSignature
+        : ankitSignature;
+
+        const html = `
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
 <link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Sanskrit&display=swap" rel="stylesheet">
-
 <style>
     @page { size: A4; margin: 4mm; }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    html, body {
-        width: 100%;
-        height: 100%;
-    }
-
-    body {
-        font-family: Arial, sans-serif;
-        font-size: 11.5px;
-        color: #000;
-        line-height: 1.25;
-    }
-
-    .invocation {
-        text-align: center;
-        font-weight: bold;
-        font-size: 15px;
-        font-family: 'Tiro Devanagari Sanskrit', serif;
-        margin-bottom: 3px;
-    }
-
-    .outer-border {
-        border: 1.5px solid #000;
-        padding: 12px;
-        page-break-inside: avoid;
-    }
-
-    /* Header */
-    .header {
-        text-align: center;
-        border-bottom: 2px solid #000;
-        padding-bottom: 5px;
-        margin-bottom: 6px;
-    }
-
-    .firm-name {
-        font-size: 36px;
-        font-weight: 900;
-        color: #b91c1c;
-        margin-bottom: 2px;
-    }
-
-    .firm-type {
-        font-size: 13px;
-        font-weight: bold;
-    }
-
-    .firm-addr {
-        font-size: 10px;
-    }
-
-    .jurisdiction {
-        font-size: 9px;
-        font-style: italic;
-        margin-top: 2px;
-    }
-
-    .do-banner {
-        color: #b91c1c;
-        text-align: center;
-        font-size: 20px;
-        font-weight: bold;
-        margin: 4px 0;
-        border-top: 1px solid #eee;
-        padding-top: 4px;
-    }
-
-    .payment-title {
-        font-weight: bold;
-        font-size: 14px;
-        margin-bottom: 5px;
-        color: #b91c1c;
-        letter-spacing: 0.4px;
-    }
-
-    /* Tables */
-    .compact-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 8px;
-    }
-
-    .compact-table td,
-    .compact-table th {
-        border: 1px solid #000;
-        padding: 6px 10px;
-        font-size: 11px;
-        vertical-align: top;
-    }
-
-    .label-cell {
-        background: #e5e7eb;
-        font-weight: bold;
-        text-align: center;
-    }
-
+    html, body { width: 100%; height: 100%; }
+    body { font-family: Arial, sans-serif; font-size: 11.5px; color: #000; line-height: 1.25; }
+    .invocation { text-align: center; font-weight: bold; font-size: 15px; font-family: 'Tiro Devanagari Sanskrit', serif; margin-bottom: 3px; }
+    .outer-border { border: 1.5px solid #000; padding: 12px; page-break-inside: avoid; }
+    .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 6px; }
+    .firm-name { font-size: 36px; font-weight: 900; color: #b91c1c; margin-bottom: 2px; }
+    .firm-type { font-size: 13px; font-weight: bold; }
+    .firm-addr { font-size: 10px; }
+    .jurisdiction { font-size: 9px; font-style: italic; margin-top: 2px; }
+    .do-banner { color: #b91c1c; text-align: center; font-size: 20px; font-weight: bold; margin: 4px 0; border-top: 1px solid #eee; padding-top: 4px; }
+    .payment-title { font-weight: bold; font-size: 14px; margin-bottom: 5px; color: #b91c1c; letter-spacing: 0.4px; }
+    .compact-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+    .compact-table td, .compact-table th { border: 1px solid #000; padding: 6px 10px; font-size: 11px; vertical-align: top; }
+    .label-cell { background: #e5e7eb; font-weight: bold; text-align: center; }
     .right-align { text-align: right; }
     .bold-text { font-weight: bold; }
-
-    /* Footer */
-    .footer {
-        display: flex;
-        justify-content: space-between;
-        margin-top: 12px;
-        font-size: 10px;
-    }
-
-    .note-text {
-        width: 70%;
-        line-height: 1.4;
-    }
-
-    .sign-area {
-        width: 25%;
-        text-align: right;
-        font-weight: bold;
-    }
+    .footer { display: flex; justify-content: space-between; margin-top: 12px; font-size: 10px; }
+    .note-text { width: 70%; line-height: 1.4; }
+    .sign-area { width: 25%; text-align: right; font-weight: bold; }
 </style>
 </head>
-
 <body>
-
 <div class="invocation">|| जय श्री कृष्णा ||</div>
-
 <div class="outer-border">
-
     <div class="header">
-       <h1 class="firm-name">
-${data.businessDetails?.name || 'ANKIT BROKERS'}
-</h1>
-
-<div class="firm-type">
-${data.businessDetails?.subtitle || 'SUGAR BROKER & COMMISSION AGENT'}
-</div>
-
-<div class="firm-addr">
-${data.businessDetails?.address || ''}
-| Mob:
-${data.businessDetails?.mobile1 || ''}
-${data.businessDetails?.mobile2
-    ? ', ' + data.businessDetails.mobile2
-    : ''}
-</div>
-
-<div class="jurisdiction">
-SUBJECT TO
-${data.businessDetails?.jurisdiction || 'INDORE'}
-JURISDICTION
-</div>
+        <h1 class="firm-name">${data.businessDetails?.name || 'ANKIT BROKERS'}</h1>
+        <div class="firm-type">${data.businessDetails?.subtitle || 'SUGAR BROKER & COMMISSION AGENT'}</div>
+        <div class="firm-addr">
+            ${data.businessDetails?.address || ''} | Mob: ${data.businessDetails?.mobile1 || ''}${data.businessDetails?.mobile2 ? ', ' + data.businessDetails.mobile2 : ''}
+        </div>
+        <div class="jurisdiction">SUBJECT TO ${data.businessDetails?.jurisdiction || 'INDORE'} JURISDICTION</div>
     </div>
 
     <div class="do-banner">DELIVERY ORDER</div>
@@ -375,17 +259,17 @@ JURISDICTION
 
     <table class="compact-table">
         <tr>
-            <td class="label-cell">BILLED TO.</td>
-            <td class="label-cell">SHIPPED TO.</td>
+            <td class="label-cell" style="width:50%;">BILLED TO.</td>
+            <td class="label-cell" style="width:50%;">SHIPPED TO.</td>
         </tr>
         <tr>
-            <td>
+            <td style="height:70px;">
                 <span class="bold-text">${data.billTo.name}</span><br>
                 ${data.billTo.place}<br>
                 ${data.billTo.city}<br>
                 <span class="bold-text"><br><hr><br>GSTIN: ${data.billTo.gst}</span>
             </td>
-            <td>
+            <td style="height:70px;">
                 <span class="bold-text">${data.shipTo.name}</span><br>
                 ${data.shipTo.place}<br>
                 ${data.shipTo.city}<br>
@@ -453,22 +337,30 @@ JURISDICTION
             Please Load Dry And Fresh Goods.<br>
             <span class="bold-text">THANK YOU</span>
         </div>
-      <div class="sign-area">
-    For ${data.businessDetails?.name || 'ANKIT BROKERS'}<br><br><br>
-</div>
+        <div class="sign-area">
+
+    <img
+        src="${signature}"
+        style="
+            width:100px;
+            height:auto;
+            object-fit:contain;
+            margin-bottom:8px;
+        "
+    />
+
+    <div>
+        For ${data.businessDetails?.name || 'ANKIT BROKERS'}
     </div>
 
 </div>
+    </div>
+</div>
 </body>
-</html>
-`;
+</html>`;
 
         await page.setContent(html, { waitUntil: 'networkidle0' });
-
-        // Slight zoom to maximize page usage
-        await page.evaluate(() => {
-            document.body.style.zoom = "1.32";
-        });
+        await page.evaluate(() => { document.body.style.zoom = "1.32"; });
 
         const pdfBuffer = await page.pdf({
             format: 'A4',
@@ -478,109 +370,10 @@ JURISDICTION
 
         await browser.close();
         res.contentType("application/pdf").send(pdfBuffer);
-
     } catch (err) {
         if (browser) await browser.close();
         res.status(500).send(err.message);
     }
-}); 
-
-app.get('/ping', (req, res) => {
-
-    res.send('Server Active');
-
-});
-
-app.get('/party', async (req, res) => {
-
-    try {
-
-        const name = req.query.name;
-        const type = req.query.type;
-
-        if (!name || !type) {
-
-            return res.json({});
-        }
-
-        let record = null;
-
-        if (type === 'bill') {
-
-            record = await Receipt.findOne({
-
-                'billTo.name': {
-
-                    $regex: new RegExp(
-                        '^' + name + '$',
-                        'i'
-                    )
-
-                }
-
-            }).sort({ createdAt: -1 });
-
-            if (!record || !record.billTo) {
-
-                return res.json({});
-            }
-
-            return res.json({
-
-                place: record.billTo.place || '',
-
-                city: record.billTo.city || '',
-
-                gst: record.billTo.gst || ''
-
-            });
-        }
-
-        if (type === 'ship') {
-
-            record = await Receipt.findOne({
-
-                'shipTo.name': {
-
-                    $regex: new RegExp(
-                        '^' + name + '$',
-                        'i'
-                    )
-
-                }
-
-            }).sort({ createdAt: -1 });
-
-            if (!record || !record.shipTo) {
-
-                return res.json({});
-            }
-
-            return res.json({
-
-                place: record.shipTo.place || '',
-
-                city: record.shipTo.city || '',
-
-                gst: record.shipTo.gst || ''
-
-            });
-        }
-
-        res.json({});
-
-    } catch (e) {
-
-        console.log(e);
-
-        res.status(500).json({
-
-            error: 'Party Fetch Failed'
-
-        });
-
-    }
-
 });
 
 app.listen(process.env.PORT || 3000, () => console.log("Server Live"));
