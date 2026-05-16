@@ -53,6 +53,15 @@ body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f1f5f9; colo
 
 }
 
+select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 16px;
+    background: #f8fafc;
+}
+
 .header { background: #1e293b; color: white; padding: 18px; text-align: center; font-weight: bold; }
 .nav { display: flex; background: #1e293b; position: sticky; top: 0; z-index: 1000; }
 .nav button { flex: 1; padding: 15px; border: none; background: #1e293b; color: #94a3b8; font-weight: 600; cursor: pointer; }

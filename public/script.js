@@ -47,13 +47,78 @@ function addGradeRow(data = { season: '2025-26', grade: '', rate: '', quantity: 
     div.innerHTML = `
         <div class="row-inputs">
             <div class="label-group"><label>Season</label><input class="row-season" value="${data.season || '2025-26'}"></div>
-            <div class="label-group"><label>Grade</label><input class="row-grade" value="${data.grade || ''}"></div>
+            <div class="label-group">
+    <label>Grade</label>
+
+    <select class="row-grade">
+        <option value="S/30" ${data.grade === 'S/30' ? 'selected' : ''}>S/30</option>
+        <option value="SS/30" ${data.grade === 'SS/30' ? 'selected' : ''}>SS/30</option>
+        <option value="M/30" ${data.grade === 'M/30' ? 'selected' : ''}>M/30</option>
+        <option value="L/30" ${data.grade === 'L/30' ? 'selected' : ''}>L/30</option>
+    </select>
+</div>
             <div class="label-group"><label>Rate</label><input class="row-rate" type="number" value="${data.rate || ''}" oninput="calculate()"></div>
             <div class="label-group"><label>Qty</label><input class="row-qty" type="number" value="${data.quantity || ''}" oninput="calculate()"></div>
         </div>
         <button class="remove-btn" type="button" onclick="this.parentElement.remove(); calculate();">×</button>
     `;
     container.appendChild(div);
+}
+
+async function autofillPartyDetails(type) {
+
+    try {
+
+        const name =
+            type === 'bill'
+                ? document.getElementById('billName').value
+                : document.getElementById('shipName').value;
+
+        if (!name) return;
+
+        const response = await fetch(
+
+            `/party?name=${encodeURIComponent(name)}&type=${type}`
+
+        );
+
+        const data = await response.json();
+
+        console.log('AUTOFILL:', data);
+
+        if (!data || Object.keys(data).length === 0) {
+
+            return;
+        }
+
+        if (type === 'bill') {
+
+            document.getElementById('billPlace').value =
+                data.place || '';
+
+            document.getElementById('billCity').value =
+                data.city || '';
+
+            document.getElementById('billGST').value =
+                data.gst || '';
+
+        } else {
+
+            document.getElementById('shipPlace').value =
+                data.place || '';
+
+            document.getElementById('shipCity').value =
+                data.city || '';
+
+            document.getElementById('shipGST').value =
+                data.gst || '';
+        }
+
+    } catch (e) {
+
+        console.log('Party Autofill Failed', e);
+
+    }
 }
 
 function addUTRRow(data = { utrNumber: '', amount: '', date: '' }) {
@@ -101,7 +166,7 @@ function setupSearchFilter() {
     });
 }
 
-function handleBusinessChange() {
+ async function handleBusinessChange() {
 
     const type = document.getElementById('businessType').value;
 
@@ -111,6 +176,36 @@ function handleBusinessChange() {
         customFields.classList.remove('hidden');
     } else {
         customFields.classList.add('hidden');
+    }
+    await loadNextDONumber();
+}
+
+async function loadNextDONumber() {
+
+    const businessType =
+        document.getElementById('businessType').value;
+
+    const doInput =
+        document.getElementById('doNumber');
+
+    
+
+    doInput.readOnly = false;
+
+    try {
+
+        const res = await fetch(
+            `/next-do/${businessType}`
+        );
+
+        const data = await res.json();
+
+        doInput.value = data.next;
+
+    } catch (e) {
+
+        console.log('DO Number Failed');
+
     }
 }
 
@@ -162,18 +257,37 @@ businessDetails:
 }
 
 async function saveData() {
+
     const data = getFormData();
+
     if (editId) data.id = editId;
+
     try {
+
         await fetch('/save', {
+
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+
+            headers: {
+                'Content-Type': 'application/json'
+            },
+
             body: JSON.stringify(data)
+
         });
+
         alert("✅ Record Saved Successfully");
-        resetForm();
+
+        await loadData();
+
+        await resetForm();
+
         showTable();
-    } catch (e) { alert("Save Failed"); }
+
+    } catch (e) {
+
+        alert("Save Failed");
+    }
 }
 
 async function loadData() {
@@ -288,11 +402,11 @@ async function sendToPDF_Direct(itemData) {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `DO_Draft.pdf`;
+  a.download = `DO_${itemData.doNumber || 'Draft'}.pdf`;
     a.click();
 }
 
-function resetForm() {
+async function resetForm() {
     editId = null;
     document.querySelectorAll('#formSection input').forEach(i => i.value = '');
     document.getElementById('gradeContainer').innerHTML = '';
@@ -313,6 +427,7 @@ document.getElementById('businessMobile2').value = '';
 document.getElementById('businessJurisdiction').value = '';
     addGradeRow();
     addUTRRow();
+    await loadNextDONumber();
 }
 
 async function wakeServer() {
@@ -337,6 +452,33 @@ async function wakeServer() {
 
 }
 
+async function loadSuggestions() {
+
+    try {
+
+        const mills = await fetch('/suggest/mills')
+            .then(r => r.json());
+
+        const parties = await fetch('/suggest/parties')
+            .then(r => r.json());
+
+        document.getElementById('millSuggestions').innerHTML =
+            mills
+                .map(m => `<option value="${m}">`)
+                .join('');
+
+        document.getElementById('partySuggestions').innerHTML =
+            parties
+                .map(p => `<option value="${p}">`)
+                .join('');
+
+    } catch (e) {
+
+        console.log('Suggestions Failed');
+
+    }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
 
     await wakeServer();
@@ -347,7 +489,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     setupAutoCaps();
 
-    resetForm();
+    await loadSuggestions();
+
+    document.getElementById('billName')
+    .addEventListener('change', () => {
+
+        autofillPartyDetails('bill');
+
+    });
+
+document.getElementById('shipName')
+    .addEventListener('change', () => {
+
+        autofillPartyDetails('ship');
+
+    });
+
+    await resetForm();
 
 });
 

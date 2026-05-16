@@ -77,8 +77,10 @@
             <div class="card">
                 <h3>Order Reference</h3>
                 <div class="form-grid">
-                    <div class="label-group"><label>DO. NO</label><input id="doNumber" placeholder="Enter DO. Number"></div>
-                    <div class="label-group"><label>Mill Name (MD)</label><input id="md" placeholder="Enter Mill Name"></div>
+                    <div class="label-group"><label>DO. NO</label><input id="doNumber" placeholder="Enter DO. Number" ></div>
+                    <div class="label-group"><label>Mill Name (MD)</label>
+                    <input id="md" list="millSuggestions">
+<datalist id="millSuggestions"></datalist></div>
                     <div class="label-group"><label>Order Date</label><input type="date" id="date"></div>
                     <div class="label-group"><label>Tender Date</label><input type="date" id="tenderDate"></div>
                 </div>
@@ -87,10 +89,22 @@
             <div class="card">
                 <h3>Bill To</h3>
                 <div class="form-grid">
-                    <input id="billName" placeholder="Name">
+                
+  <input
+    id="billName"
+    list="partySuggestions"
+    placeholder="Name"
+    autocomplete="off"
+>
+<datalist id="partySuggestions"></datalist>
                     <input id="billPlace" placeholder="Address">
                     <input id="billCity" placeholder="City">
-                    <input id="billGST" placeholder="GSTIN" class="gst-input">
+                    <input
+    id="billGST"
+    placeholder="GSTIN"
+    class="gst-input"
+    
+>
                 </div>
             </div>
 
@@ -100,7 +114,12 @@
                     <button type="button" onclick="copyBilling()" style="background:#0ea5e9; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Same as Bill To</button>
                 </div>
                 <div class="form-grid">
-                    <input id="shipName" placeholder="Name">
+         <input
+    id="shipName"
+    list="partySuggestions"
+    placeholder="Name"
+    autocomplete="off"
+>
                     <input id="shipPlace" placeholder="Address">
                     <input id="shipCity" placeholder="City"> 
                     <input id="shipGST" placeholder="GSTIN" class="gst-input">

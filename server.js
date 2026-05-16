@@ -3,16 +3,18 @@ const mongoose = require('mongoose');
 const puppeteer = require('puppeteer-core');
 const chromium = require('@sparticuz/chromium');
 const fs = require('fs');
+const axios = require('axios');
 const app = express();
 
 app.use(express.json());
 app.use(express.static('public'));
 
-const MONGO_URI = process.env.MONGO_URI || "mongodb://admin:<db_password>@ac-eslpjtn-shard-00-00.2nhq0cl.mongodb.net:27017,ac-eslpjtn-shard-00-01.2nhq0cl.mongodb.net:27017,ac-eslpjtn-shard-00-02.2nhq0cl.mongodb.net:27017/AnkitBrokers?ssl=true&replicaSet=atlas-qr4pw0-shard-0&authSource=admin&appName=Cluster0";
+const MONGO_URI = process.env.MONGO_URI || "mongodb://admin:Aadibhai1@ac-eslpjtn-shard-00-00.2nhq0cl.mongodb.net:27017,ac-eslpjtn-shard-00-01.2nhq0cl.mongodb.net:27017,ac-eslpjtn-shard-00-02.2nhq0cl.mongodb.net:27017/AnkitBrokers?ssl=true&replicaSet=atlas-qr4pw0-shard-0&authSource=admin&appName=Cluster0";
 
 mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 10000, family: 4 })
 .then(() => console.log("✅ Database Connected"))
 .catch(err => console.error("❌ DB Error:", err.message));
+
 
 const ReceiptSchema = new mongoose.Schema({
     businessType: String,
@@ -46,21 +48,129 @@ businessDetails: {
 
 const Receipt = mongoose.model('Receipt', ReceiptSchema);
 
+
+
+async function generateDONumber(businessType) {
+
+    let counter = await Counter.findOne({
+        businessType
+    });
+
+    if (!counter) {
+
+        counter = await Counter.create({
+            businessType,
+            current: 1
+        });
+
+    } else {
+
+        counter.current += 1;
+
+        await counter.save();
+    }
+
+    const prefix =
+        businessType === 'ankit'
+            ? 'AB'
+            : businessType === 'pawan'
+            ? 'PB'
+            : 'OT';
+
+    return `${prefix}-${counter.current}`;
+}
+
+
 app.get('/data', async (req, res) => {
     const receipts = await Receipt.find().sort({ createdAt: -1 });
     res.json(receipts.map(r => ({ ...r._doc, id: r._id })));
 });
 
+app.get('/suggest/mills', async (req, res) => {
+
+    const data = await Receipt.distinct('md');
+
+    res.json(data.filter(Boolean));
+});
+
+app.get('/suggest/parties', async (req, res) => {
+
+    const billNames =
+        await Receipt.distinct('billTo.name');
+
+    const shipNames =
+        await Receipt.distinct('shipTo.name');
+
+    const combined = [
+
+        ...billNames,
+        ...shipNames
+
+    ];
+
+    const unique = [...new Set(combined)];
+
+    res.json(unique.filter(Boolean));
+});
+
+app.get('/next-do/:businessType', async (req, res) => {
+
+    const type = req.params.businessType;
+
+    if (type === 'other') {
+
+        return res.json({
+            next: ''
+        });
+    }
+
+    const latest = await Receipt.findOne({
+        businessType: type
+    })
+    .sort({ createdAt: -1 });
+
+    let nextNumber = 1;
+
+    if (latest && latest.doNumber) {
+
+        nextNumber =
+            parseInt(latest.doNumber) + 1 || 1;
+    }
+
+    res.json({
+        next: nextNumber
+    });
+});
+
+
 app.post('/save', async (req, res) => {
-    if (req.body.id) await Receipt.findByIdAndUpdate(req.body.id, req.body);
-    else await new Receipt(req.body).save();
-    res.json({ message: 'Saved successfully' });
+
+    let savedRecord;
+
+    if (req.body.id) {
+
+        savedRecord = await Receipt.findByIdAndUpdate(
+            req.body.id,
+            req.body,
+            { new: true }
+        );
+
+    } else {
+
+        savedRecord = await new Receipt(req.body).save();
+    }
+
+    res.json({
+        message: 'Saved successfully'
+    });
 });
 
 app.delete('/delete/:id', async (req, res) => {
     await Receipt.findByIdAndDelete(req.params.id);
     res.json({ message: 'Deleted' });
 });
+
+
 
 app.post('/generate-pdf', async (req, res) => {
     let browser;
@@ -374,5 +484,103 @@ JURISDICTION
         res.status(500).send(err.message);
     }
 }); 
+
+app.get('/ping', (req, res) => {
+
+    res.send('Server Active');
+
+});
+
+app.get('/party', async (req, res) => {
+
+    try {
+
+        const name = req.query.name;
+        const type = req.query.type;
+
+        if (!name || !type) {
+
+            return res.json({});
+        }
+
+        let record = null;
+
+        if (type === 'bill') {
+
+            record = await Receipt.findOne({
+
+                'billTo.name': {
+
+                    $regex: new RegExp(
+                        '^' + name + '$',
+                        'i'
+                    )
+
+                }
+
+            }).sort({ createdAt: -1 });
+
+            if (!record || !record.billTo) {
+
+                return res.json({});
+            }
+
+            return res.json({
+
+                place: record.billTo.place || '',
+
+                city: record.billTo.city || '',
+
+                gst: record.billTo.gst || ''
+
+            });
+        }
+
+        if (type === 'ship') {
+
+            record = await Receipt.findOne({
+
+                'shipTo.name': {
+
+                    $regex: new RegExp(
+                        '^' + name + '$',
+                        'i'
+                    )
+
+                }
+
+            }).sort({ createdAt: -1 });
+
+            if (!record || !record.shipTo) {
+
+                return res.json({});
+            }
+
+            return res.json({
+
+                place: record.shipTo.place || '',
+
+                city: record.shipTo.city || '',
+
+                gst: record.shipTo.gst || ''
+
+            });
+        }
+
+        res.json({});
+
+    } catch (e) {
+
+        console.log(e);
+
+        res.status(500).json({
+
+            error: 'Party Fetch Failed'
+
+        });
+
+    }
+
+});
 
 app.listen(process.env.PORT || 3000, () => console.log("Server Live"));
