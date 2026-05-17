@@ -9,7 +9,7 @@ const path = require('path');
 app.use(express.json());
 app.use(express.static('public'));
 
-const MONGO_URI = process.env.MONGO_URI || "mongodb://admin:Aadibhai1@ac-eslpjtn-shard-00-00.2nhq0cl.mongodb.net:27017,ac-eslpjtn-shard-00-01.2nhq0cl.mongodb.net:27017,ac-eslpjtn-shard-00-02.2nhq0cl.mongodb.net:27017/AnkitBrokers?ssl=true&replicaSet=atlas-qr4pw0-shard-0&authSource=admin&appName=Cluster0";
+const MONGO_URI = process.env.MONGO_URI || "mongodb://admin:<db_password>@ac-eslpjtn-shard-00-00.2nhq0cl.mongodb.net:27017,ac-eslpjtn-shard-00-01.2nhq0cl.mongodb.net:27017,ac-eslpjtn-shard-00-02.2nhq0cl.mongodb.net:27017/AnkitBrokers?ssl=true&replicaSet=atlas-qr4pw0-shard-0&authSource=admin&appName=Cluster0";
 
 
 mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 10000, family: 4 })
