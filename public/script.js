@@ -22,49 +22,137 @@ function showTable() {
     loadData();
 }
 
-function addGradeRow(data = { season: '2025-26', grade: '', rate: '', quantity: '' }) {
+function addGradeRow(data = {
+    season: '2025-26',
+    grade: '',
+    rate: '',
+    quantity: ''
+}) {
+
     const container = document.getElementById('gradeContainer');
+
     const div = document.createElement('div');
+
     div.className = 'dynamic-row grade-row';
-    const currentQuantity = data.quantity !== undefined ? data.quantity : (data.qty || '');
+
+    const currentQuantity =
+        data.quantity !== undefined
+            ? data.quantity
+            : (data.qty || '');
+
     const selectedGrade = data.grade || 'S/30';
 
     div.innerHTML = `
+
         <div class="row-inputs">
-            <div class="label-group"><label>Season</label><input class="row-season" value="${data.season || '2025-26'}"></div>
+
+            <div class="label-group">
+                <label>Season</label>
+                <input class="row-season" value="${data.season || '2025-26'}">
+            </div>
+
             <div class="label-group">
                 <label>Grade</label>
-                <select class="row-grade" style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; background:#f8fafc;">
+
+                <select class="row-grade">
+
                     <option value="S/30" ${selectedGrade === 'S/30' ? 'selected' : ''}>S/30</option>
+
                     <option value="SS/30" ${selectedGrade === 'SS/30' ? 'selected' : ''}>SS/30</option>
+
                     <option value="M/30" ${selectedGrade === 'M/30' ? 'selected' : ''}>M/30</option>
+
                     <option value="L/30" ${selectedGrade === 'L/30' ? 'selected' : ''}>L/30</option>
+
                 </select>
             </div>
-            <div class="label-group"><label>Rate</label><input class="row-rate" type="number" value="${data.rate || ''}" oninput="calculate()"></div>
-            <div class="label-group"><label>Qty</label><input class="row-qty" type="number" value="${currentQuantity}" oninput="calculate()"></div>
+
+            <div class="label-group">
+                <label>Rate</label>
+                <input
+                    class="row-rate"
+                    type="number"
+                    value="${data.rate || ''}"
+                    oninput="calculate()"
+                >
+            </div>
+
+            <div class="label-group">
+                <label>Qty</label>
+                <input
+                    class="row-qty"
+                    type="number"
+                    value="${currentQuantity}"
+                    oninput="calculate()"
+                >
+            </div>
+
         </div>
-       <button class="remove-btn" type="button">
-    Remove Row
-</button>
+
+        <button
+            class="remove-btn"
+            type="button"
+            onclick="removeDynamicRow(this, true)"
+        >
+            Remove Row
+        </button>
+
     `;
+
     container.appendChild(div);
 }
 
-function addUTRRow(data = { utrNumber: '', amount: '', date: '' }) {
+function addUTRRow(data = {
+    utrNumber: '',
+    amount: '',
+    date: ''
+}) {
+
     const container = document.getElementById('utrContainer');
+
     const div = document.createElement('div');
+
     div.className = 'dynamic-row utr-row';
+
     div.innerHTML = `
-        <div class="row-inputs utr-inputs">
-            <div class="label-group"><label>UTR No</label><input class="utr-num" value="${data.utrNumber || ''}"></div>
-            <div class="label-group"><label>Amount</label><input class="utr-amt" type="number" value="${data.amount || ''}"></div>
-            <div class="label-group"><label>Date</label><input class="utr-date" type="date" value="${data.date || ''}"></div>
+
+        <div class="row-inputs">
+
+            <div class="label-group">
+                <label>UTR No</label>
+                <input class="utr-num" value="${data.utrNumber || ''}">
+            </div>
+
+            <div class="label-group">
+                <label>Amount</label>
+                <input
+                    class="utr-amt"
+                    type="number"
+                    value="${data.amount || ''}"
+                >
+            </div>
+
+            <div class="label-group">
+                <label>Date</label>
+                <input
+                    class="utr-date"
+                    type="date"
+                    value="${data.date || ''}"
+                >
+            </div>
+
         </div>
-       <button class="remove-btn" type="button">
-    Remove Row
-</button>
+
+        <button
+            class="remove-btn"
+            type="button"
+            onclick="removeDynamicRow(this)"
+        >
+            Remove Row
+        </button>
+
     `;
+
     container.appendChild(div);
 }
 
@@ -169,6 +257,19 @@ function calculate() {
         subtotal += (rate * qty);
     });
     document.getElementById('total').value = (subtotal * 1.05).toFixed(2);
+}
+
+function removeDynamicRow(button, shouldRecalculate = false) {
+
+    const row = button.closest('.dynamic-row');
+
+    if (!row) return;
+
+    row.remove();
+
+    if (shouldRecalculate) {
+        calculate();
+    }
 }
 
 function copyBilling() {
@@ -390,20 +491,35 @@ async function sendToPDF_Direct(itemData) {
 }
 
 async function resetForm() {
+
     editId = null;
-    document.querySelectorAll('#formSection input:not([readonly])').forEach(i => i.value = '');
+
+    document
+        .querySelectorAll('#formSection input:not([readonly])')
+        .forEach(i => i.value = '');
+
     document.getElementById('gradeContainer').innerHTML = '';
     document.getElementById('utrContainer').innerHTML = '';
+
     document.getElementById('businessType').value = 'ankit';
-    document.getElementById('customBusinessFields').classList.add('hidden');
+
+    document
+        .getElementById('customBusinessFields')
+        .classList.add('hidden');
+
     document.getElementById('businessName').value = '';
     document.getElementById('businessAddress').value = '';
     document.getElementById('businessMobile1').value = '';
     document.getElementById('businessMobile2').value = '';
     document.getElementById('businessJurisdiction').value = '';
+
+    // ✅ RENDER IMMEDIATELY
     addGradeRow();
+
     addUTRRow();
-    await loadNextDONumber();
+
+    // ✅ LOAD DO NUMBER AFTER UI RENDER
+    loadNextDONumber();
 }
 
 async function wakeServer() {
@@ -446,7 +562,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupAutoCaps();
 
     // ✅ Load suggestions FIRST so knownPartyNames is populated before attaching listeners
-    await loadSuggestions();
+    loadSuggestions();
 
     // ✅ Now attach autofill — both bill and ship
     attachPartyAutofill(document.getElementById('billName'), 'bill');
