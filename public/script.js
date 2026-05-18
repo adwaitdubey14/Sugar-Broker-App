@@ -578,7 +578,24 @@ async function loadSuggestions() {
 }
 
 function setupAutoCaps() {
-    const ids = ['businessName', 'businessAddress', 'businessJurisdiction', 'billName', 'billPlace', 'billCity', 'shipName', 'shipPlace', 'shipCity', 'md', 'vehicle'];
+   const ids = [
+    'businessName',
+    'businessAddress',
+    'businessJurisdiction',
+
+    'billName',
+    'billPlace',
+    'billCity',
+    'billGST',
+
+    'shipName',
+    'shipPlace',
+    'shipCity',
+    'shipGST',
+
+    'md',
+    'vehicle'
+];
     ids.forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
