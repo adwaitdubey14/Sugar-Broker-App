@@ -1,9 +1,21 @@
 let editId = null;
+let allRecords = [];
 
 const businessConfigs = {
     ankit: { name: "ANKIT BROKERS", subtitle: "SUGAR BROKER & COMMISSION AGENT", address: "SIYAGANJ, INDORE, 452001 (MP)", mobile1: "9425951212", mobile2: "9424052922", jurisdiction: "INDORE" },
     pawan: { name: "PAWAN SUGAR BROKERS", subtitle: "SUGAR BROKER & COMMISSION AGENT", address: "34 - GANJ BAZAR, KHANDWA (M.P.)", mobile1: "9425928529", mobile2: "9425085229", jurisdiction: "KHANDWA" }
 };
+
+function formatDate(dateString) {
+
+    if (!dateString) return '';
+
+    const parts = dateString.split('-');
+
+    if (parts.length !== 3) return dateString;
+
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+}
 
 let knownPartyNames = [];
 
@@ -23,7 +35,7 @@ function showTable() {
 }
 
 function addGradeRow(data = {
-    season: '2025-26',
+    season: '2026-27',
     grade: '',
     rate: '',
     quantity: ''
@@ -48,7 +60,7 @@ function addGradeRow(data = {
 
             <div class="label-group">
                 <label>Season</label>
-                <input class="row-season" value="${data.season || '2025-26'}">
+                <input class="row-season" value="${data.season || '2026-27'}">
             </div>
 
             <div class="label-group">
@@ -280,6 +292,12 @@ function copyBilling() {
 }
 
 function setupSearchFilter() {
+    const recordFilter = document.getElementById('recordFilter');
+
+if (recordFilter) {
+
+    recordFilter.addEventListener('change', loadData);
+}
     const searchInput = document.getElementById('searchInput');
     if (!searchInput) return;
     searchInput.addEventListener('keyup', function () {
@@ -378,13 +396,26 @@ async function saveData() {
 async function loadData() {
     const res = await fetch('/data');
     const data = await res.json();
+
+allRecords = data;
     const tableBody = document.querySelector('#dataTable tbody');
     tableBody.innerHTML = '';
-    data.forEach(item => {
+    const selectedFilter =
+    document.getElementById('recordFilter')?.value || 'all';
+
+let filteredData = [...allRecords];
+
+if (selectedFilter !== 'all') {
+
+    filteredData = filteredData.filter(
+        item => item.businessType === selectedFilter
+    );
+}
+    filteredData.forEach(item => {
         const id = item.id || item._id;
         tableBody.innerHTML += `
             <tr>
-                <td>${item.date || ''}</td>
+             <td>${formatDate(item.date)}</td>
                 <td>${item.md || ''}</td>
                 <td>${item.billTo?.name || ''}</td>
                 <td>${item.vehicle || ''}</td>

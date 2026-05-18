@@ -164,6 +164,17 @@ function getBase64Image(imagePath) {
     }
 }
 
+function formatDisplayDate(dateString) {
+
+    if (!dateString) return '';
+
+    const parts = dateString.split('-');
+
+    if (parts.length !== 3) return dateString;
+
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+}
+
 app.post('/generate-pdf', async (req, res) => {
     let browser;
     try {
@@ -249,13 +260,13 @@ const signature =
             </td>
             <td style="text-align:right; font-size:12px;">
                 <span class="bold-text">DO. NO :-</span> ${data.doNumber}<br>
-                <span class="bold-text">DATE :-</span> ${data.date}
+                <span class="bold-text">DATE :-</span> ${formatDisplayDate(data.date)}
             </td>
         </tr>
     </table>
 
     <div style="font-size:11px; padding:3px 0; border-bottom:1px solid #000; margin-bottom:6px;">
-        <span class="bold-text">TENDER DATE:</span> ${data.tenderDate}
+        <span class="bold-text">TENDER DATE:</span> ${formatDisplayDate(data.tenderDate)}
     </div>
 
     <table class="compact-table">
@@ -319,7 +330,7 @@ const signature =
         <tbody>
             ${(data.utrDetails || []).map(u => `
                 <tr>
-                    <td>${u.date}</td>
+                    <td>${formatDisplayDate(u.date)}</td>
                     <td>${u.utrNumber}</td>
                     <td>${u.amount}</td>
                 </tr>

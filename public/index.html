@@ -106,7 +106,45 @@
         </div>
 
         <div id="tableSection" class="hidden">
-            <div class="card"><input type="text" id="searchInput" placeholder="🔍 Search records by name..."></div>
+           <div class="card">
+
+    <div class="form-grid">
+
+        <div>
+            <input
+                type="text"
+                id="searchInput"
+                placeholder="🔍 Search records by name..."
+            >
+        </div>
+
+        <div>
+
+            <select id="recordFilter">
+
+                <option value="all">
+                    All Businesses
+                </option>
+
+                <option value="ankit">
+                    Ankit Brokers
+                </option>
+
+                <option value="pawan">
+                    Pawan Sugar Brokers
+                </option>
+
+                <option value="other">
+                    Others
+                </option>
+
+            </select>
+
+        </div>
+
+    </div>
+
+</div>
             <div class="card">
                 <div class="table-container">
                     <table id="dataTable">
